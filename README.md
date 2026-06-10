@@ -31,6 +31,22 @@
 $ npm install
 ```
 
+## CaspX local configuration
+
+Swagger UI is available at `/docs`, and the OpenAPI JSON is available at `/docs-json`.
+
+The first `SUPERADMIN` account is bootstrapped on application startup when these environment variables are set:
+
+```bash
+SUPERADMIN_EMAIL="superadmin@caspex.local"
+SUPERADMIN_PASSWORD="CaspXSuperAdmin_123"
+SUPERADMIN_FIRST_NAME="CaspX"
+SUPERADMIN_LAST_NAME="Superadmin"
+SUPERADMIN_PHONE="+77010000000"
+```
+
+For local development `JWT_ACCESS_TTL` can be long-lived, for example `2d`, to simplify Swagger debugging. Production should use a short access token TTL, for example `15m`.
+
 ## Compile and run the project
 
 ```bash
