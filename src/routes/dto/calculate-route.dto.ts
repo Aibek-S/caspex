@@ -56,6 +56,15 @@ export class RouteGeometryDto {
 
   @ApiProperty({
     type: 'array',
+    items: {
+      type: 'array',
+      items: {
+        type: 'number',
+        format: 'double',
+      },
+      minItems: 2,
+      maxItems: 2,
+    },
     example: [
       [51.17, 43.65],
       [49.89, 40.37],
