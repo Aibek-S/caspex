@@ -126,11 +126,26 @@ model Order {
 
   client         User            @relation("ClientOrders", fields: [clientId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   carrier        CarrierProfile? @relation(fields: [carrierId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  routes         Route[]
   trackingEvents OrderTracking[]
 
   @@index([clientId])
   @@index([carrierId])
   @@index([status])
+  @@index([createdAt])
+}
+
+model Route {
+  id              String   @id @default(cuid())
+  orderId         String?
+  distanceKm      Float
+  durationMinutes Float
+  geometry        Json
+  createdAt       DateTime @default(now())
+
+  order Order? @relation(fields: [orderId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@index([orderId])
   @@index([createdAt])
 }
 

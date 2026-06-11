@@ -10,6 +10,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { SuperadminModule } from './superadmin/superadmin.module';
 import { TrackingModule } from './tracking/tracking.module';
 import { VehiclesModule } from './vehicles/vehicles.module';
+import { RoutesModule } from './routes/routes.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { VehiclesModule } from './vehicles/vehicles.module';
     SuperadminModule,
     TrackingModule,
     VehiclesModule,
+    RoutesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
