@@ -2,11 +2,11 @@ import { HttpService } from '@nestjs/axios';
 import {
   BadGatewayException,
   BadRequestException,
-  ForbiddenException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
+import { AxiosError } from 'axios';
 import { Order, UserRole } from '@prisma/client';
 import { firstValueFrom } from 'rxjs';
 import { CarrierProfileRepository } from '../../carrier/repositories/carrier-profile.repository';
@@ -35,6 +35,16 @@ type OrsDirectionsResponse = {
       };
     };
   }>;
+};
+
+type OrsErrorResponse = {
+  error?:
+    | string
+    | {
+        code?: number;
+        message?: string;
+      };
+  message?: string;
 };
 
 @Injectable()
@@ -130,8 +140,8 @@ export class RoutesService {
       );
 
       return response.data;
-    } catch {
-      throw new BadGatewayException('OpenRouteService request failed');
+    } catch (error) {
+      throw this.mapOrsError(error);
     }
   }
 
@@ -193,5 +203,38 @@ export class RoutesService {
     const carrierProfile =
       await this.carrierProfileRepository.findByUserId(userId);
     return carrierProfile?.id === order.carrierId;
+  }
+
+  private mapOrsError(error: unknown) {
+    if (error instanceof AxiosError) {
+      if (!error.response) {
+        throw new BadGatewayException('OpenRouteService is unavailable');
+      }
+
+      const status = error.response.status;
+      const data = error.response.data as OrsErrorResponse | undefined;
+      const message =
+        typeof data?.error === 'string'
+          ? data.error
+          : data?.error?.message ?? data?.message ?? 'OpenRouteService request failed';
+
+      if (status === 400 || status === 404) {
+        throw new BadRequestException(message);
+      }
+
+      if (status === 401 || status === 403) {
+        throw new BadGatewayException(
+          'OpenRouteService rejected the configured API key',
+        );
+      }
+
+      if (status === 429) {
+        throw new BadGatewayException('OpenRouteService rate limit exceeded');
+      }
+
+      throw new BadGatewayException(message);
+    }
+
+    throw new BadGatewayException('OpenRouteService request failed');
   }
 }

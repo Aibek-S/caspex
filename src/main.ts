@@ -7,6 +7,19 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  app.use((req, res, next) => {
+    if (
+      req.path === '/docs-json' ||
+      req.path === '/docs' ||
+      req.path.startsWith('/docs/')
+    ) {
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+    }
+    next();
+  });
+
   app.useGlobalPipes(
     new ValidationPipe({
       forbidNonWhitelisted: true,

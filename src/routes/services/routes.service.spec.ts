@@ -4,6 +4,7 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
+import { AxiosError } from 'axios';
 import { OrderStatus, UserRole } from '@prisma/client';
 import { of, throwError } from 'rxjs';
 import { RoutesService } from './routes.service';
@@ -219,6 +220,74 @@ describe('RoutesService', () => {
   it('throws when ors request fails', async () => {
     httpServiceMock.post.mockReturnValue(
       throwError(() => new Error('network failed')),
+    );
+
+    await expect(
+      service.calculate(clientUser, {
+        startLat: 43.65,
+        startLng: 51.17,
+        endLat: 40.37,
+        endLng: 49.89,
+      }),
+    ).rejects.toThrow(BadGatewayException);
+  });
+
+  it('returns bad request when ors reports a non-routable point', async () => {
+    httpServiceMock.post.mockReturnValue(
+      throwError(
+        () =>
+          new AxiosError(
+            'Request failed with status code 404',
+            'ERR_BAD_REQUEST',
+            undefined,
+            undefined,
+            {
+              status: 404,
+              statusText: 'Not Found',
+              headers: {},
+              config: {} as any,
+              data: {
+                error: {
+                  code: 2010,
+                  message:
+                    'Could not find routable point within a radius of 350.0 meters',
+                },
+              },
+            },
+          ),
+      ),
+    );
+
+    await expect(
+      service.calculate(clientUser, {
+        startLat: 43.65,
+        startLng: 51.17,
+        endLat: 40.37,
+        endLng: 49.89,
+      }),
+    ).rejects.toThrow(BadRequestException);
+  });
+
+  it('returns explicit bad gateway when ors rejects the api key', async () => {
+    httpServiceMock.post.mockReturnValue(
+      throwError(
+        () =>
+          new AxiosError(
+            'Request failed with status code 401',
+            'ERR_BAD_REQUEST',
+            undefined,
+            undefined,
+            {
+              status: 401,
+              statusText: 'Unauthorized',
+              headers: {},
+              config: {} as any,
+              data: {
+                error: 'Authorization field missing',
+              },
+            },
+          ),
+      ),
     );
 
     await expect(
