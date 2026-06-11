@@ -105,11 +105,17 @@ model Order {
   weight                     Float
   volume                     Float
   origin                     String
+  originCity                 String?
+  originCountry              String?
   destination                String
+  destinationCity            String?
+  destinationCountry         String?
   originLat                  Float?
   originLng                  Float?
   destinationLat             Float?
   destinationLng             Float?
+  cargoPhotoUrl              String?
+  productPhotoUrls           String[]    @default([])
   comment                    String?
   estimatedPrice             Float?
   estimatedDeliveryTime      Int?

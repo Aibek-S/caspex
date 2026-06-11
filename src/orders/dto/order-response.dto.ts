@@ -26,8 +26,20 @@ export class OrderResponseDto {
   @ApiProperty({ example: 'Aktau' })
   origin: string;
 
+  @ApiProperty({ example: 'Aktau', nullable: true })
+  originCity: string | null;
+
+  @ApiProperty({ example: 'Kazakhstan', nullable: true })
+  originCountry: string | null;
+
   @ApiProperty({ example: 'Kuryk Port' })
   destination: string;
+
+  @ApiProperty({ example: 'Kuryk', nullable: true })
+  destinationCity: string | null;
+
+  @ApiProperty({ example: 'Kazakhstan', nullable: true })
+  destinationCountry: string | null;
 
   @ApiProperty({ example: 43.6532, nullable: true })
   originLat: number | null;
@@ -40,6 +52,21 @@ export class OrderResponseDto {
 
   @ApiProperty({ example: 51.6814, nullable: true })
   destinationLng: number | null;
+
+  @ApiProperty({
+    example: 'https://cdn.example.com/orders/cargo-photo.jpg',
+    nullable: true,
+  })
+  cargoPhotoUrl: string | null;
+
+  @ApiProperty({
+    example: [
+      'https://cdn.example.com/orders/photo-1.jpg',
+      'https://cdn.example.com/orders/photo-2.jpg',
+    ],
+    type: [String],
+  })
+  productPhotoUrls: string[];
 
   @ApiProperty({ example: 'Requires covered truck', nullable: true })
   comment: string | null;
