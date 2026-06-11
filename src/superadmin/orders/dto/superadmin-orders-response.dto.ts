@@ -19,7 +19,6 @@ export class SuperadminOrderItemDto extends OrderResponseDto {
 
   @ApiProperty({ example: 'Ibrayev', nullable: true })
   carrierLastName: string | null;
-
 }
 
 export class SuperadminOrderEnvelopeResponseDto {

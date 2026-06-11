@@ -24,6 +24,10 @@ Added `Order`:
 - `volume`
 - `origin`
 - `destination`
+- `originLat`
+- `originLng`
+- `destinationLat`
+- `destinationLng`
 - `comment`
 - `estimatedPrice`
 - `estimatedDeliveryTime`
@@ -63,6 +67,7 @@ Endpoints:
 - `POST /orders`
   - Creates an order for the current authenticated user.
   - Default status is `SEARCHING`.
+  - Coordinates are required and stored on the order for later route calculation.
 - `GET /orders`
   - Lists orders related to the current user.
 - `GET /orders/my`

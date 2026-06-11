@@ -106,6 +106,10 @@ model Order {
   volume                     Float
   origin                     String
   destination                String
+  originLat                  Float?
+  originLng                  Float?
+  destinationLat             Float?
+  destinationLng             Float?
   comment                    String?
   estimatedPrice             Float?
   estimatedDeliveryTime      Int?

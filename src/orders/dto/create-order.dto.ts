@@ -50,6 +50,34 @@ export class CreateOrderDto {
   @MaxLength(200)
   destination: string;
 
+  @ApiProperty({ example: 43.6532 })
+  @Type(() => Number)
+  @IsNumber()
+  @Min(-90)
+  @Max(90)
+  originLat: number;
+
+  @ApiProperty({ example: 51.1975 })
+  @Type(() => Number)
+  @IsNumber()
+  @Min(-180)
+  @Max(180)
+  originLng: number;
+
+  @ApiProperty({ example: 43.1789 })
+  @Type(() => Number)
+  @IsNumber()
+  @Min(-90)
+  @Max(90)
+  destinationLat: number;
+
+  @ApiProperty({ example: 51.6814 })
+  @Type(() => Number)
+  @IsNumber()
+  @Min(-180)
+  @Max(180)
+  destinationLng: number;
+
   @ApiProperty({ example: 'Requires covered truck', required: false })
   @Transform(trimString)
   @IsOptional()

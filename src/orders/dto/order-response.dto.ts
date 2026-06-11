@@ -29,6 +29,18 @@ export class OrderResponseDto {
   @ApiProperty({ example: 'Kuryk Port' })
   destination: string;
 
+  @ApiProperty({ example: 43.6532, nullable: true })
+  originLat: number | null;
+
+  @ApiProperty({ example: 51.1975, nullable: true })
+  originLng: number | null;
+
+  @ApiProperty({ example: 43.1789, nullable: true })
+  destinationLat: number | null;
+
+  @ApiProperty({ example: 51.6814, nullable: true })
+  destinationLng: number | null;
+
   @ApiProperty({ example: 'Requires covered truck', nullable: true })
   comment: string | null;
 

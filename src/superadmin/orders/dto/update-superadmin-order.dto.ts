@@ -58,6 +58,38 @@ export class UpdateSuperadminOrderDto {
   @MaxLength(200)
   destination?: string;
 
+  @ApiPropertyOptional({ example: 43.6532, minimum: -90, maximum: 90 })
+  @Type(() => Number)
+  @IsOptional()
+  @IsNumber()
+  @Min(-90)
+  @Max(90)
+  originLat?: number;
+
+  @ApiPropertyOptional({ example: 51.1975, minimum: -180, maximum: 180 })
+  @Type(() => Number)
+  @IsOptional()
+  @IsNumber()
+  @Min(-180)
+  @Max(180)
+  originLng?: number;
+
+  @ApiPropertyOptional({ example: 43.1789, minimum: -90, maximum: 90 })
+  @Type(() => Number)
+  @IsOptional()
+  @IsNumber()
+  @Min(-90)
+  @Max(90)
+  destinationLat?: number;
+
+  @ApiPropertyOptional({ example: 51.6814, minimum: -180, maximum: 180 })
+  @Type(() => Number)
+  @IsOptional()
+  @IsNumber()
+  @Min(-180)
+  @Max(180)
+  destinationLng?: number;
+
   @ApiPropertyOptional({ example: 'Requires covered truck' })
   @Transform(trimString)
   @IsOptional()
