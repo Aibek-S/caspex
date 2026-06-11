@@ -35,6 +35,8 @@ $ npm install
 
 Swagger UI is available at `/docs`, and the OpenAPI JSON is available at `/docs-json`.
 
+The route calculation endpoint is available at `POST /routes/calculate`. It uses OpenRouteService and returns distance, duration, and GeoJSON line geometry.
+
 The first `SUPERADMIN` account is bootstrapped on application startup when these environment variables are set:
 
 ```bash
