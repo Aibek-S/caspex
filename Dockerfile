@@ -20,6 +20,7 @@ RUN npm run build
 FROM base AS runner
 ENV NODE_ENV=production
 WORKDIR /app
+RUN mkdir -p /app/uploads
 
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist

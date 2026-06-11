@@ -37,6 +37,24 @@ Swagger UI is available at `/docs`, and the OpenAPI JSON is available at `/docs-
 
 The route calculation endpoint is available at `POST /routes/calculate`. It uses OpenRouteService and returns distance, duration, and GeoJSON line geometry.
 
+Uploaded media is served from `/uploads/*`. The backend stores files on the server filesystem and persists public URLs in the database:
+
+- `POST /uploads/avatar` updates `user.avatarUrl`
+- `POST /uploads/cargo` updates `order.cargoPhotoUrl`
+- `POST /uploads/product` appends to `order.productPhotoUrls`
+
+For deployed environments behind a proxy, set:
+
+```bash
+PUBLIC_BASE_URL="https://api-angels.byapex.dev"
+```
+
+This makes upload responses return stable public URLs like:
+
+```text
+https://api-angels.byapex.dev/uploads/avatars/...
+```
+
 The first `SUPERADMIN` account is bootstrapped on application startup when these environment variables are set:
 
 ```bash

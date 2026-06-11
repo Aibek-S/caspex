@@ -11,6 +11,7 @@ import { SuperadminModule } from './superadmin/superadmin.module';
 import { TrackingModule } from './tracking/tracking.module';
 import { VehiclesModule } from './vehicles/vehicles.module';
 import { RoutesModule } from './routes/routes.module';
+import { UploadsModule } from './uploads/uploads.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { RoutesModule } from './routes/routes.module';
     TrackingModule,
     VehiclesModule,
     RoutesModule,
+    UploadsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

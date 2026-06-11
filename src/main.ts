@@ -2,10 +2,15 @@ import 'dotenv/config';
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import express from 'express';
+import { join } from 'path';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.getHttpAdapter().getInstance().set('trust proxy', 1);
+
+  app.use('/uploads', express.static(join(process.cwd(), 'uploads')));
 
   app.use((req, res, next) => {
     if (
