@@ -8,6 +8,7 @@ import { UsersModule } from './users/users.module';
 import { OrdersModule } from './orders/orders.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { SuperadminModule } from './superadmin/superadmin.module';
+import { TrackingModule } from './tracking/tracking.module';
 import { VehiclesModule } from './vehicles/vehicles.module';
 
 @Module({
@@ -18,6 +19,7 @@ import { VehiclesModule } from './vehicles/vehicles.module';
     UsersModule,
     OrdersModule,
     SuperadminModule,
+    TrackingModule,
     VehiclesModule,
   ],
   controllers: [AppController],

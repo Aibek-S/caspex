@@ -41,7 +41,7 @@ export class OrderResponseDto {
   @ApiProperty({ example: 120, nullable: true })
   estimatedCarrierSearchTime: number | null;
 
-  @ApiProperty({ enum: OrderStatus, example: OrderStatus.NEW })
+  @ApiProperty({ enum: OrderStatus, example: OrderStatus.SEARCHING })
   status: OrderStatus;
 
   @ApiProperty({ example: '2026-06-11T04:18:44.902Z' })

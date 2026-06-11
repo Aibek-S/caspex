@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { Order, OrderStatus, UserRole } from '@prisma/client';
 import { AuthUser } from '../../common/types/auth-user.type';
+import { TrackingService } from '../../tracking/services/tracking.service';
 import { CarrierProfileRepository } from '../../carrier/repositories/carrier-profile.repository';
 import { CreateOrderDto } from '../dto/create-order.dto';
 import { UpdateOrderDto } from '../dto/update-order.dto';
@@ -17,6 +18,7 @@ export class OrdersService {
   constructor(
     private readonly ordersRepository: OrdersRepository,
     private readonly carrierProfileRepository: CarrierProfileRepository,
+    private readonly trackingService: TrackingService,
   ) {}
 
   async create(authUser: AuthUser, dto: CreateOrderDto) {
@@ -36,7 +38,13 @@ export class OrdersService {
       estimatedPrice: dto.estimatedPrice ?? null,
       estimatedDeliveryTime: dto.estimatedDeliveryTime ?? null,
       estimatedCarrierSearchTime: dto.estimatedCarrierSearchTime ?? null,
-      status: OrderStatus.NEW,
+      status: OrderStatus.SEARCHING,
+    });
+
+    await this.trackingService.recordOrderEvent({
+      orderId: order.id,
+      status: OrderStatus.SEARCHING,
+      location: order.origin,
     });
 
     return { order };
@@ -65,7 +73,9 @@ export class OrdersService {
       authUser.role !== UserRole.SUPERADMIN &&
       !this.isEditableStatus(order.status)
     ) {
-      throw new ConflictException('Only new or searching orders can be edited');
+      throw new ConflictException(
+        'Only searching or newly created orders can be edited',
+      );
     }
 
     const updatedOrder = await this.ordersRepository.update(orderId, {
@@ -92,10 +102,17 @@ export class OrdersService {
     const order = await this.findVisibleOrderOrThrow(authUser, orderId);
 
     if (authUser.role === UserRole.SUPERADMIN) {
+      const updatedOrder = await this.ordersRepository.update(orderId, {
+        status: dto.status,
+      });
+      await this.trackingService.recordOrderEvent({
+        orderId,
+        status: dto.status,
+        location: this.resolveStatusLocation(updatedOrder),
+      });
+
       return {
-        order: await this.ordersRepository.update(orderId, {
-          status: dto.status,
-        }),
+        order: updatedOrder,
       };
     }
 
@@ -104,10 +121,17 @@ export class OrdersService {
         throw new ForbiddenException('Client can only cancel an order');
       }
 
+      const updatedOrder = await this.ordersRepository.update(orderId, {
+        status: dto.status,
+      });
+      await this.trackingService.recordOrderEvent({
+        orderId,
+        status: dto.status,
+        location: this.resolveStatusLocation(updatedOrder),
+      });
+
       return {
-        order: await this.ordersRepository.update(orderId, {
-          status: dto.status,
-        }),
+        order: updatedOrder,
       };
     }
 
@@ -118,10 +142,17 @@ export class OrdersService {
         );
       }
 
+      const updatedOrder = await this.ordersRepository.update(orderId, {
+        status: dto.status,
+      });
+      await this.trackingService.recordOrderEvent({
+        orderId,
+        status: dto.status,
+        location: this.resolveStatusLocation(updatedOrder),
+      });
+
       return {
-        order: await this.ordersRepository.update(orderId, {
-          status: dto.status,
-        }),
+        order: updatedOrder,
       };
     }
 
@@ -194,5 +225,23 @@ export class OrdersService {
     return (
       status === OrderStatus.IN_TRANSIT || status === OrderStatus.DELIVERED
     );
+  }
+
+  private resolveStatusLocation(
+    order: Pick<Order, 'origin' | 'destination' | 'status'>,
+  ) {
+    if (
+      order.status === OrderStatus.NEW ||
+      order.status === OrderStatus.SEARCHING ||
+      order.status === OrderStatus.ASSIGNED
+    ) {
+      return order.origin;
+    }
+
+    if (order.status === OrderStatus.DELIVERED) {
+      return order.destination;
+    }
+
+    return null;
   }
 }

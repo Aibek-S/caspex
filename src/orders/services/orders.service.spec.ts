@@ -14,6 +14,9 @@ describe('OrdersService', () => {
   const carrierProfileRepositoryMock = {
     findByUserId: jest.fn(),
   };
+  const trackingServiceMock = {
+    recordOrderEvent: jest.fn(),
+  };
 
   const clientUser = {
     id: 'client-1',
@@ -23,27 +26,6 @@ describe('OrdersService', () => {
     lastName: 'Serikov',
     phone: '+77010000001',
     isActive: true,
-  };
-
-  const carrierUser = {
-    id: 'carrier-user-1',
-    email: 'carrier01@caspex.local',
-    role: UserRole.CARRIER,
-    firstName: 'Alibi',
-    lastName: 'Samatov',
-    phone: '+77010000002',
-    isActive: true,
-  };
-
-  const carrierProfile = {
-    id: 'carrier-1',
-    userId: carrierUser.id,
-    experienceYears: 5,
-    transportType: 'ROAD',
-    description: null,
-    isApproved: true,
-    createdAt: new Date('2026-06-11T10:00:00.000Z'),
-    updatedAt: new Date('2026-06-11T10:00:00.000Z'),
   };
 
   const order = {
@@ -60,7 +42,7 @@ describe('OrdersService', () => {
     estimatedPrice: 100000,
     estimatedDeliveryTime: 8,
     estimatedCarrierSearchTime: 120,
-    status: OrderStatus.NEW,
+    status: OrderStatus.SEARCHING,
     createdAt: new Date('2026-06-11T10:00:00.000Z'),
     updatedAt: new Date('2026-06-11T10:00:00.000Z'),
   };
@@ -72,6 +54,7 @@ describe('OrdersService', () => {
     service = new OrdersService(
       ordersRepositoryMock as never,
       carrierProfileRepositoryMock as never,
+      trackingServiceMock as never,
     );
   });
 
@@ -93,9 +76,14 @@ describe('OrdersService', () => {
     expect(ordersRepositoryMock.create).toHaveBeenCalledWith(
       expect.objectContaining({
         clientId: clientUser.id,
-        status: OrderStatus.NEW,
+        status: OrderStatus.SEARCHING,
       }),
     );
+    expect(trackingServiceMock.recordOrderEvent).toHaveBeenCalledWith({
+      orderId: order.id,
+      status: OrderStatus.SEARCHING,
+      location: order.origin,
+    });
     expect(result.order.id).toBe(order.id);
   });
 

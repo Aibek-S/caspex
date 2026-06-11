@@ -7,6 +7,7 @@ import {
 import { OrderStatus, UserRole } from '@prisma/client';
 import { CarrierProfileRepository } from '../../carrier/repositories/carrier-profile.repository';
 import { AuthUser } from '../../common/types/auth-user.type';
+import { TrackingService } from '../../tracking/services/tracking.service';
 import { OrdersRepository } from '../repositories/orders.repository';
 
 @Injectable()
@@ -14,6 +15,7 @@ export class OrderAssignmentService {
   constructor(
     private readonly ordersRepository: OrdersRepository,
     private readonly carrierProfileRepository: CarrierProfileRepository,
+    private readonly trackingService: TrackingService,
   ) {}
 
   async assignToCurrentCarrier(authUser: AuthUser, orderId: string) {
@@ -51,6 +53,12 @@ export class OrderAssignmentService {
     const updatedOrder = await this.ordersRepository.update(orderId, {
       carrier: { connect: { id: carrierProfile.id } },
       status: OrderStatus.ASSIGNED,
+    });
+
+    await this.trackingService.recordOrderEvent({
+      orderId,
+      status: OrderStatus.ASSIGNED,
+      location: updatedOrder.origin,
     });
 
     return { order: updatedOrder };

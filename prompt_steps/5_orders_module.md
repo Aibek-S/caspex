@@ -49,25 +49,38 @@ Module:
 
 - `src/orders/`
 
+Internal services:
+
+- `OrdersService`
+  - Handles order creation, listing, visibility, updates, status changes and deletion.
+- `OrderAssignmentService`
+  - Handles assigning an available order to the current approved carrier profile.
+  - Sets `order.carrierId = carrierProfile.id`.
+  - Sets `order.status = ASSIGNED`.
+
 Endpoints:
 
 - `POST /orders`
   - Creates an order for the current authenticated user.
-  - Default status is `NEW`.
+  - Default status is `SEARCHING`.
 - `GET /orders`
   - Lists orders related to the current user.
 - `GET /orders/my`
   - Alias for current user's related orders.
 - `GET /orders/available`
-  - Lists unassigned orders in `NEW` or `SEARCHING`.
+  - Lists unassigned orders in `SEARCHING` or legacy `NEW`.
 - `GET /orders/:id`
   - Returns an order visible to the current user.
 - `PATCH /orders/:id`
-  - Updates own order details while status is `NEW` or `SEARCHING`.
+  - Updates own order details while status is `SEARCHING` or legacy `NEW`.
 - `PATCH /orders/:id/status`
   - Lets clients cancel and assigned carriers progress to `IN_TRANSIT` or `DELIVERED`.
-- `PATCH /orders/:id/assign`
+- `POST /orders/:id/assign`
   - Assigns an available order to the current approved carrier profile.
+- `POST /orders/:id/accept`
+  - Alias for carrier accepting an available order.
+- `PATCH /orders/:id/assign`
+  - Backward-compatible alias for assignment.
 - `DELETE /orders/:id`
   - Deletes own non-active order.
 

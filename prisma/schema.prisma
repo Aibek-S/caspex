@@ -110,17 +110,33 @@ model Order {
   estimatedPrice             Float?
   estimatedDeliveryTime      Int?
   estimatedCarrierSearchTime Int?
-  status                     OrderStatus @default(NEW)
+  status                     OrderStatus @default(SEARCHING)
   createdAt                  DateTime    @default(now())
   updatedAt                  DateTime    @updatedAt
 
-  client  User            @relation("ClientOrders", fields: [clientId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  carrier CarrierProfile? @relation(fields: [carrierId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  client         User            @relation("ClientOrders", fields: [clientId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  carrier        CarrierProfile? @relation(fields: [carrierId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  trackingEvents OrderTracking[]
 
   @@index([clientId])
   @@index([carrierId])
   @@index([status])
   @@index([createdAt])
+}
+
+model OrderTracking {
+  id        String      @id @default(cuid())
+  orderId   String
+  status    OrderStatus
+  location  String?
+  timestamp DateTime    @default(now())
+  createdAt DateTime    @default(now())
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([orderId])
+  @@index([status])
+  @@index([timestamp])
 }
 
 model RefreshToken {

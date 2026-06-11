@@ -108,7 +108,7 @@ export class OrdersController {
   })
   @ApiConflictResponse({
     type: ErrorResponseDto,
-    description: 'Only new or searching orders can be edited',
+    description: 'Only searching or newly created orders can be edited',
   })
   @ApiNotFoundResponse({
     type: ErrorResponseDto,

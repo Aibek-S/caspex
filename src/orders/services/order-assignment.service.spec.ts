@@ -10,6 +10,9 @@ describe('OrderAssignmentService', () => {
   const carrierProfileRepositoryMock = {
     findByUserId: jest.fn(),
   };
+  const trackingServiceMock = {
+    recordOrderEvent: jest.fn(),
+  };
 
   const carrierUser = {
     id: 'carrier-user-1',
@@ -46,7 +49,7 @@ describe('OrderAssignmentService', () => {
     estimatedPrice: 100000,
     estimatedDeliveryTime: 8,
     estimatedCarrierSearchTime: 120,
-    status: OrderStatus.NEW,
+    status: OrderStatus.SEARCHING,
     createdAt: new Date('2026-06-11T10:00:00.000Z'),
     updatedAt: new Date('2026-06-11T10:00:00.000Z'),
   };
@@ -58,6 +61,7 @@ describe('OrderAssignmentService', () => {
     service = new OrderAssignmentService(
       ordersRepositoryMock as never,
       carrierProfileRepositoryMock as never,
+      trackingServiceMock as never,
     );
   });
 
@@ -76,7 +80,29 @@ describe('OrderAssignmentService', () => {
       carrier: { connect: { id: carrierProfile.id } },
       status: OrderStatus.ASSIGNED,
     });
+    expect(trackingServiceMock.recordOrderEvent).toHaveBeenCalledWith({
+      orderId: order.id,
+      status: OrderStatus.ASSIGNED,
+      location: order.origin,
+    });
     expect(result.order.carrierId).toBe(carrierProfile.id);
+    expect(result.order.status).toBe(OrderStatus.ASSIGNED);
+  });
+
+  it('allows assignment from searching state', async () => {
+    carrierProfileRepositoryMock.findByUserId.mockResolvedValue(carrierProfile);
+    ordersRepositoryMock.findById.mockResolvedValue({
+      ...order,
+      status: OrderStatus.SEARCHING,
+    });
+    ordersRepositoryMock.update.mockResolvedValue({
+      ...order,
+      carrierId: carrierProfile.id,
+      status: OrderStatus.ASSIGNED,
+    });
+
+    const result = await service.assignToCurrentCarrier(carrierUser, order.id);
+
     expect(result.order.status).toBe(OrderStatus.ASSIGNED);
   });
 
