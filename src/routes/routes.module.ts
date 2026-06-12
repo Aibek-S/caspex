@@ -9,5 +9,6 @@ import { RoutesService } from './services/routes.service';
   imports: [HttpModule, CarrierModule],
   controllers: [RoutesController],
   providers: [RoutesService, RoutesRepository],
+  exports: [RoutesService],
 })
 export class RoutesModule {}

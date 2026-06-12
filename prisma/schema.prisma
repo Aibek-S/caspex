@@ -149,6 +149,49 @@ model Route {
   @@index([createdAt])
 }
 
+model Checkpoint {
+  id             String   @id @default(cuid())
+  name           String   @unique
+  loadPercent    Int      @default(0)
+  avgWaitMinutes Int      @default(0)
+  latitude       Float
+  longitude      Float
+  updatedAt      DateTime @updatedAt
+
+  @@index([latitude, longitude])
+}
+
+model TrainSchedule {
+  id               String   @id @default(cuid())
+  stationName      String   @unique
+  departuresPerDay Int      @default(0)
+  currentLoad      Int      @default(0)
+  avgDelayMinutes  Int      @default(0)
+  latitude         Float
+  longitude        Float
+  updatedAt        DateTime @updatedAt
+
+  @@index([latitude, longitude])
+}
+
+model CheckpointLoadSnapshot {
+  id                String   @id @default(cuid())
+  syncBatchId       String
+  source            String
+  checkpointName    String
+  borderCountry     String?
+  region            String?
+  waitingAreaCount  Int      @default(0)
+  activeTruckNumbers String[] @default([])
+  entryTimes        String[] @default([])
+  raw               Json
+  fetchedAt         DateTime @default(now())
+
+  @@index([syncBatchId])
+  @@index([fetchedAt])
+  @@index([checkpointName])
+}
+
 model OrderTracking {
   id        String      @id @default(cuid())
   orderId   String

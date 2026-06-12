@@ -12,6 +12,8 @@ import { TrackingModule } from './tracking/tracking.module';
 import { VehiclesModule } from './vehicles/vehicles.module';
 import { RoutesModule } from './routes/routes.module';
 import { UploadsModule } from './uploads/uploads.module';
+import { CheckpointLoadsModule } from './checkpoint-loads/checkpoint-loads.module';
+import { PredictionsModule } from './predictions/predictions.module';
 
 @Module({
   imports: [
@@ -25,6 +27,8 @@ import { UploadsModule } from './uploads/uploads.module';
     VehiclesModule,
     RoutesModule,
     UploadsModule,
+    CheckpointLoadsModule,
+    PredictionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

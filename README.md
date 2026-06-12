@@ -37,6 +37,13 @@ Swagger UI is available at `/docs`, and the OpenAPI JSON is available at `/docs-
 
 The route calculation endpoint is available at `POST /routes/calculate`. It uses OpenRouteService and returns distance, duration, and GeoJSON line geometry.
 
+Checkpoint load scraping is available through:
+
+- `POST /checkpoint-loads/sync` for a fresh scrape from public Qoldau pages
+- `GET /checkpoint-loads/current` for the latest normalized snapshot
+
+This version builds checkpoint load from the public waiting area registry and checkpoint catalog, because the public booking pages are prefiltered to a single checkpoint in their HTML.
+
 Uploaded media is served from `/uploads/*`. The backend stores files on the server filesystem and persists public URLs in the database:
 
 - `POST /uploads/avatar` updates `user.avatarUrl`
@@ -64,6 +71,39 @@ SUPERADMIN_FIRST_NAME="CaspX"
 SUPERADMIN_LAST_NAME="Superadmin"
 SUPERADMIN_PHONE="+77010000000"
 ```
+
+## DHL seed import
+
+The backend can seed mock `Order` rows from real DHL eCommerce tracking data:
+
+```bash
+npm run seed:dhl
+```
+
+Required `.env` variables:
+
+```bash
+DHL_API_KEY="your-dhl-api-key"
+DHL_API_SECRET="your-dhl-api-secret"
+DHL_PICKUP_ACCOUNT="5119000"
+DATABASE_URL="postgresql://..."
+```
+
+Optional variables:
+
+```bash
+DHL_TARGET_COUNT="24"
+DHL_START_DATE="20260601"
+DHL_END_DATE="20260607"
+DHL_LOOKBACK_WINDOWS="8"
+DHL_FILTER_CITY="Austin"
+DHL_FILTER_STATE="TX"
+DHL_FILTER_COUNTRY="US"
+DHL_FILTER_POSTAL_CODE="73301"
+DHL_FILTER_ORDERED_PRODUCT_ID="ParcelPlus"
+```
+
+The script uses `GET /tracking/v4/package/open`, paginates with `offset` and `limit=10`, skips already imported DHL identifiers, and writes tracking history into `OrderTracking`.
 
 For local development `JWT_ACCESS_TTL` can be long-lived, for example `2d`, to simplify Swagger debugging. Production should use a short access token TTL, for example `15m`.
 
