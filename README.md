@@ -27,6 +27,17 @@ $ npm install
 
 Swagger UI is available at `/docs`, and the OpenAPI JSON is available at `/docs-json`.
 
+## Mangystau regional data
+
+The regional demo data is stored in JSON files under `prisma/data/`:
+
+- `mangystau-settlements.json` contains 33 Mangystau cities, towns and villages with district names and coordinates.
+- `mangystau-distances.json` contains 19 intra-regional routes with Haversine distance estimates and approximate driving duration.
+- `mangystau-cargo-scenarios.json` contains realistic regional cargo flows such as water to remote settlements, construction materials and fuel.
+- `mangystau-analytics-fixtures.json` contains pitch-ready baseline KPIs by district, cargo category, route and weather risk.
+
+Haversine values are straight-line estimates for analytics and demo ETA calculations. They must not be presented as road distance. For road distance and GeoJSON route geometry, use `POST /routes/calculate` with a configured OpenRouteService key.
+
 The route calculation endpoint is available at `POST /routes/calculate`. It uses OpenRouteService and returns distance, duration, and GeoJSON line geometry.
 
 Checkpoint load scraping is available through:

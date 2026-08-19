@@ -63,7 +63,10 @@ describe('AggregatorService', () => {
       weather: {
         risk: 'medium',
         wind: 14,
+        temperature: 30,
         rain: true,
+        heat: false,
+        dust: false,
       },
       checkpoints: [
         {
@@ -122,5 +125,33 @@ describe('AggregatorService', () => {
     );
 
     expect(result.weather.risk).toBe('high');
+  });
+
+  it('raises high risk for extreme heat and dust', () => {
+    const result = service.aggregate(
+      { distanceKm: 100, durationMinutes: 60 },
+      [
+        {
+          lat: 43,
+          lng: 51,
+          temperature: 41,
+          windSpeed: 10,
+          rain: false,
+          snow: false,
+          description: 'dust and sand',
+        },
+      ],
+      [],
+      [],
+    );
+
+    expect(result.weather).toEqual({
+      risk: 'high',
+      wind: 10,
+      temperature: 41,
+      rain: false,
+      heat: true,
+      dust: true,
+    });
   });
 });
