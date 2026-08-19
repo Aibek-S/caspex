@@ -10,6 +10,7 @@ import {
   Max,
   MaxLength,
   Min,
+  ValidateIf,
 } from 'class-validator';
 
 const trimString = ({ value }: TransformFnParams): unknown =>
@@ -45,11 +46,23 @@ export class CreateOrderDto {
   @Min(0)
   volume: number;
 
-  @ApiProperty({ example: 'Aktau' })
+  @ApiProperty({
+    example: 'aktau',
+    required: false,
+    description: 'Settlement id from GET /settlements. When set, location and coordinates are resolved by the server.',
+  })
+  @Transform(trimString)
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  originSettlementId?: string;
+
+  @ApiProperty({ example: 'Aktau', required: false })
+  @ValidateIf((dto: CreateOrderDto) => !dto.originSettlementId)
   @Transform(trimString)
   @IsString()
   @MaxLength(200)
-  origin: string;
+  origin?: string;
 
   @ApiProperty({ example: 'Aktau', required: false })
   @Transform(trimString)
@@ -65,11 +78,23 @@ export class CreateOrderDto {
   @MaxLength(100)
   originCountry?: string;
 
-  @ApiProperty({ example: 'Kuryk Port' })
+  @ApiProperty({
+    example: 'kuryk',
+    required: false,
+    description: 'Settlement id from GET /settlements. When set, location and coordinates are resolved by the server.',
+  })
+  @Transform(trimString)
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  destinationSettlementId?: string;
+
+  @ApiProperty({ example: 'Kuryk', required: false })
+  @ValidateIf((dto: CreateOrderDto) => !dto.destinationSettlementId)
   @Transform(trimString)
   @IsString()
   @MaxLength(200)
-  destination: string;
+  destination?: string;
 
   @ApiProperty({ example: 'Kuryk', required: false })
   @Transform(trimString)
@@ -85,33 +110,37 @@ export class CreateOrderDto {
   @MaxLength(100)
   destinationCountry?: string;
 
-  @ApiProperty({ example: 43.6532 })
+  @ApiProperty({ example: 43.6532, required: false })
+  @ValidateIf((dto: CreateOrderDto) => !dto.originSettlementId)
   @Type(() => Number)
   @IsNumber()
   @Min(-90)
   @Max(90)
-  originLat: number;
+  originLat?: number;
 
-  @ApiProperty({ example: 51.1975 })
+  @ApiProperty({ example: 51.1975, required: false })
+  @ValidateIf((dto: CreateOrderDto) => !dto.originSettlementId)
   @Type(() => Number)
   @IsNumber()
   @Min(-180)
   @Max(180)
-  originLng: number;
+  originLng?: number;
 
-  @ApiProperty({ example: 43.1789 })
+  @ApiProperty({ example: 43.1789, required: false })
+  @ValidateIf((dto: CreateOrderDto) => !dto.destinationSettlementId)
   @Type(() => Number)
   @IsNumber()
   @Min(-90)
   @Max(90)
-  destinationLat: number;
+  destinationLat?: number;
 
-  @ApiProperty({ example: 51.6814 })
+  @ApiProperty({ example: 51.6814, required: false })
+  @ValidateIf((dto: CreateOrderDto) => !dto.destinationSettlementId)
   @Type(() => Number)
   @IsNumber()
   @Min(-180)
   @Max(180)
-  destinationLng: number;
+  destinationLng?: number;
 
   @ApiProperty({
     example: 'https://cdn.example.com/orders/cargo-photo.jpg',

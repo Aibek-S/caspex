@@ -4,9 +4,11 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Order, OrderStatus, UserRole } from '@prisma/client';
+import { Order, OrderStatus, Route, UserRole } from '@prisma/client';
 import { AuthUser } from '../../common/types/auth-user.type';
 import { TrackingService } from '../../tracking/services/tracking.service';
+import { SettlementsService } from '../../settlements/services/settlements.service';
+import { RoutesService } from '../../routes/services/routes.service';
 import { CarrierProfileRepository } from '../../carrier/repositories/carrier-profile.repository';
 import { CreateOrderDto } from '../dto/create-order.dto';
 import { UpdateOrderDto } from '../dto/update-order.dto';
@@ -19,6 +21,8 @@ export class OrdersService {
     private readonly ordersRepository: OrdersRepository,
     private readonly carrierProfileRepository: CarrierProfileRepository,
     private readonly trackingService: TrackingService,
+    private readonly settlementsService: SettlementsService,
+    private readonly routesService: RoutesService,
   ) {}
 
   async create(authUser: AuthUser, dto: CreateOrderDto) {
@@ -26,22 +30,29 @@ export class OrdersService {
       throw new ForbiddenException('ADMIN users cannot create orders');
     }
 
+    const { originSettlement, destinationSettlement } =
+      await this.resolveSettlements(dto);
+
     const order = await this.ordersRepository.create({
       clientId: authUser.id,
       title: dto.title,
       cargoType: dto.cargoType,
       weight: dto.weight,
       volume: dto.volume,
-      origin: dto.origin,
-      originCity: dto.originCity ?? null,
-      originCountry: dto.originCountry ?? null,
-      destination: dto.destination,
-      destinationCity: dto.destinationCity ?? null,
-      destinationCountry: dto.destinationCountry ?? null,
-      originLat: dto.originLat,
-      originLng: dto.originLng,
-      destinationLat: dto.destinationLat,
-      destinationLng: dto.destinationLng,
+      origin: originSettlement?.name ?? dto.origin!,
+      originSettlementId: originSettlement?.id,
+      originCity: originSettlement?.name ?? dto.originCity ?? null,
+      originCountry: originSettlement ? 'Kazakhstan' : dto.originCountry ?? null,
+      destination: destinationSettlement?.name ?? dto.destination!,
+      destinationSettlementId: destinationSettlement?.id,
+      destinationCity: destinationSettlement?.name ?? dto.destinationCity ?? null,
+      destinationCountry: destinationSettlement
+        ? 'Kazakhstan'
+        : dto.destinationCountry ?? null,
+      originLat: originSettlement?.latitude ?? dto.originLat!,
+      originLng: originSettlement?.longitude ?? dto.originLng!,
+      destinationLat: destinationSettlement?.latitude ?? dto.destinationLat!,
+      destinationLng: destinationSettlement?.longitude ?? dto.destinationLng!,
       cargoPhotoUrl: dto.cargoPhotoUrl ?? null,
       productPhotoUrls: dto.productPhotoUrls ?? [],
       comment: dto.comment ?? null,
@@ -57,7 +68,21 @@ export class OrdersService {
       location: order.origin,
     });
 
-    return { order };
+    const route = await this.tryCalculateRoute(order);
+    const orderWithRouteEta = route
+      ? await this.ordersRepository.update(order.id, {
+          estimatedDeliveryTime: Math.max(
+            1,
+            Math.ceil(route.durationMinutes / 60),
+          ),
+        })
+      : order;
+
+    return {
+      order: orderWithRouteEta,
+      route,
+      routeCalculated: route !== null,
+    };
   }
 
   async listMine(authUser: AuthUser) {
@@ -88,21 +113,32 @@ export class OrdersService {
       );
     }
 
+    const { originSettlement, destinationSettlement } =
+      await this.resolveSettlements(dto);
+
     const updatedOrder = await this.ordersRepository.update(orderId, {
       title: dto.title,
       cargoType: dto.cargoType,
       weight: dto.weight,
       volume: dto.volume,
-      origin: dto.origin,
-      originCity: dto.originCity,
-      originCountry: dto.originCountry,
-      destination: dto.destination,
-      destinationCity: dto.destinationCity,
-      destinationCountry: dto.destinationCountry,
-      originLat: dto.originLat,
-      originLng: dto.originLng,
-      destinationLat: dto.destinationLat,
-      destinationLng: dto.destinationLng,
+      origin: originSettlement?.name ?? dto.origin,
+      originSettlement: originSettlement
+        ? { connect: { id: originSettlement.id } }
+        : undefined,
+      originCity: originSettlement?.name ?? dto.originCity,
+      originCountry: originSettlement ? 'Kazakhstan' : dto.originCountry,
+      destination: destinationSettlement?.name ?? dto.destination,
+      destinationSettlement: destinationSettlement
+        ? { connect: { id: destinationSettlement.id } }
+        : undefined,
+      destinationCity: destinationSettlement?.name ?? dto.destinationCity,
+      destinationCountry: destinationSettlement
+        ? 'Kazakhstan'
+        : dto.destinationCountry,
+      originLat: originSettlement?.latitude ?? dto.originLat,
+      originLng: originSettlement?.longitude ?? dto.originLng,
+      destinationLat: destinationSettlement?.latitude ?? dto.destinationLat,
+      destinationLng: destinationSettlement?.longitude ?? dto.destinationLng,
       cargoPhotoUrl: dto.cargoPhotoUrl,
       productPhotoUrls: dto.productPhotoUrls,
       comment: dto.comment,
@@ -214,6 +250,33 @@ export class OrdersService {
     }
 
     throw new NotFoundException('Order not found');
+  }
+
+  private async resolveSettlements(
+    dto: Pick<CreateOrderDto, 'originSettlementId' | 'destinationSettlementId'>,
+  ) {
+    const [originSettlement, destinationSettlement] = await Promise.all([
+      dto.originSettlementId
+        ? this.settlementsService
+            .findOne(dto.originSettlementId)
+            .then(({ settlement }) => settlement)
+        : Promise.resolve(null),
+      dto.destinationSettlementId
+        ? this.settlementsService
+            .findOne(dto.destinationSettlementId)
+            .then(({ settlement }) => settlement)
+        : Promise.resolve(null),
+    ]);
+
+    return { originSettlement, destinationSettlement };
+  }
+
+  private async tryCalculateRoute(order: Order): Promise<Route | null> {
+    try {
+      return await this.routesService.calculateForOrder(order);
+    } catch {
+      return null;
+    }
   }
 
   private ensureClientOwnerOrSuperadmin(authUser: AuthUser, order: Order) {

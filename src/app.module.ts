@@ -14,6 +14,7 @@ import { RoutesModule } from './routes/routes.module';
 import { UploadsModule } from './uploads/uploads.module';
 import { CheckpointLoadsModule } from './checkpoint-loads/checkpoint-loads.module';
 import { PredictionsModule } from './predictions/predictions.module';
+import { SettlementsModule } from './settlements/settlements.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { PredictionsModule } from './predictions/predictions.module';
     UploadsModule,
     CheckpointLoadsModule,
     PredictionsModule,
+    SettlementsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

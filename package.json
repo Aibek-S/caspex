@@ -24,8 +24,9 @@
     "seed:dhl": "ts-node prisma/seed-dhl-ecommerce.ts",
     "sync:qoldau": "ts-node src/checkpoint-loads/scripts/sync-qoldau-checkpoint-loads.ts",
     "seed:checkpoint": "ts-node prisma/seed-checkpoint-and-rail.ts",
-"seed:train": "ts-node prisma/seed-train-schedule.ts",
+    "seed:train": "ts-node prisma/seed-train-schedule.ts",
     "seed:demo": "ts-node prisma/seed-demo-data.ts",
+    "seed:settlements": "ts-node prisma/seed-mangystau-settlements.ts",
     "validate:mangystau": "ts-node prisma/validate-mangystau-data.ts"
   },
   "dependencies": {

@@ -105,9 +105,11 @@ model Order {
   weight                     Float
   volume                     Float
   origin                     String
+  originSettlementId         String?
   originCity                 String?
   originCountry              String?
   destination                String
+  destinationSettlementId    String?
   destinationCity            String?
   destinationCountry         String?
   originLat                  Float?
@@ -126,11 +128,15 @@ model Order {
 
   client         User            @relation("ClientOrders", fields: [clientId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   carrier        CarrierProfile? @relation(fields: [carrierId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  originSettlement Settlement? @relation("OriginSettlementOrders", fields: [originSettlementId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  destinationSettlement Settlement? @relation("DestinationSettlementOrders", fields: [destinationSettlementId], references: [id], onDelete: SetNull, onUpdate: Cascade)
   routes         Route[]
   trackingEvents OrderTracking[]
 
   @@index([clientId])
   @@index([carrierId])
+  @@index([originSettlementId])
+  @@index([destinationSettlementId])
   @@index([status])
   @@index([createdAt])
 }
@@ -147,6 +153,26 @@ model Route {
 
   @@index([orderId])
   @@index([createdAt])
+}
+
+model Settlement {
+  id        String   @id
+  name      String   @unique
+  nameRu    String
+  nameKk    String
+  type      String
+  district  String
+  latitude  Float
+  longitude Float
+  source    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  originOrders      Order[] @relation("OriginSettlementOrders")
+  destinationOrders Order[] @relation("DestinationSettlementOrders")
+
+  @@index([district])
+  @@index([latitude, longitude])
 }
 
 model Checkpoint {

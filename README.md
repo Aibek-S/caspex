@@ -36,6 +36,25 @@ The regional demo data is stored in JSON files under `prisma/data/`:
 - `mangystau-cargo-scenarios.json` contains realistic regional cargo flows such as water to remote settlements, construction materials and fuel.
 - `mangystau-analytics-fixtures.json` contains pitch-ready baseline KPIs by district, cargo category, route and weather risk.
 
+Load the settlements into PostgreSQL and expose them to the frontend:
+
+```bash
+npm run seed:settlements
+```
+
+`GET /settlements` returns the regional catalogue; `GET /settlements/:id` returns one settlement by its dataset id.
+
+When creating or updating an order, the frontend can send settlement ids instead of manually entered location text and coordinates:
+
+```json
+{
+  "originSettlementId": "aktau",
+  "destinationSettlementId": "kuryk"
+}
+```
+
+The backend resolves the names and coordinates from the settlement catalogue. The previous `origin`, `destination` and coordinate fields remain supported for compatibility.
+
 Haversine values are straight-line estimates for analytics and demo ETA calculations. They must not be presented as road distance. For road distance and GeoJSON route geometry, use `POST /routes/calculate` with a configured OpenRouteService key.
 
 The route calculation endpoint is available at `POST /routes/calculate`. It uses OpenRouteService and returns distance, duration, and GeoJSON line geometry.

@@ -21,7 +21,7 @@ const clients = [
 ];
 
 const carriers = [
-  { email: 'dostyk-carrier@mail.kz', firstName: 'Ержан', lastName: 'Сагынтаев', company: 'ТОО Dostyk Trans', city: 'Dostyk', phone: '+77099990011', transportType: 'truck', experienceYears: 8 },
+  { email: 'fort-shevchenko-carrier@mail.kz', firstName: 'Ержан', lastName: 'Сагынтаев', company: 'ТОО Fort-Shevchenko Trans', city: 'Fort-Shevchenko', phone: '+77099990011', transportType: 'truck', experienceYears: 8 },
   { email: 'shetpe-express@mail.kz', firstName: 'Талгат', lastName: 'Муратов', company: 'Shetpe Express', city: 'Shetpe', phone: '+77099990022', transportType: 'truck', experienceYears: 12 },
   { email: 'caspian-logistics@mail.kz', firstName: 'Азамат', lastName: 'Беков', company: 'Caspian Logistics', city: 'Aktau', phone: '+77099990033', transportType: 'truck', experienceYears: 5 },
   { email: 'mangystau-cargo@mail.kz', firstName: 'Нурлан', lastName: 'Ашимов', company: 'Mangystau Cargo', city: 'Zhanaozen', phone: '+77099990044', transportType: 'truck', experienceYears: 15 },
@@ -40,6 +40,14 @@ const vehiclesData = [
 
 async function main() {
   const saltRounds = Number(process.env.BCRYPT_SALT_ROUNDS ?? '12');
+
+  // Remove the legacy non-regional demo carrier left by older seed versions.
+  const removedLegacyCarrier = await prisma.user.deleteMany({
+    where: { email: 'dostyk-carrier@mail.kz' },
+  });
+  if (removedLegacyCarrier.count > 0) {
+    console.log(`Removed ${removedLegacyCarrier.count} legacy Dostyk demo carrier`);
+  }
 
   // ── Clients ─────────────────────────────────────────────
   console.log('Creating clients...');
