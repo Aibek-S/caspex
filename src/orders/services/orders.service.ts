@@ -6,9 +6,11 @@ import {
 } from '@nestjs/common';
 import { Order, OrderStatus, UserRole } from '@prisma/client';
 import { AuthUser } from '../../common/types/auth-user.type';
+import { PrismaService } from '../../prisma/prisma.service';
 import { TrackingService } from '../../tracking/services/tracking.service';
 import { CarrierProfileRepository } from '../../carrier/repositories/carrier-profile.repository';
 import { CreateOrderDto } from '../dto/create-order.dto';
+import { ListAvailableOrdersQueryDto } from '../dto/list-available-orders-query.dto';
 import { UpdateOrderDto } from '../dto/update-order.dto';
 import { UpdateOrderStatusDto } from '../dto/update-order-status.dto';
 import { OrdersRepository } from '../repositories/orders.repository';
@@ -19,6 +21,7 @@ export class OrdersService {
     private readonly ordersRepository: OrdersRepository,
     private readonly carrierProfileRepository: CarrierProfileRepository,
     private readonly trackingService: TrackingService,
+    private readonly prisma: PrismaService,
   ) {}
 
   async create(authUser: AuthUser, dto: CreateOrderDto) {
@@ -65,9 +68,51 @@ export class OrdersService {
     return { orders };
   }
 
-  async listAvailable() {
-    const orders = await this.ordersRepository.findAvailable();
+  async listAvailable(query: ListAvailableOrdersQueryDto) {
+    const weightMin = query.weightMin ? Number(query.weightMin) : undefined;
+    const weightMax = query.weightMax ? Number(query.weightMax) : undefined;
+    const limit = Math.min(Math.max(Number(query.limit) || 100, 1), 500);
+
+    const orders = await this.ordersRepository.findAvailable({
+      origin: query.origin,
+      destination: query.destination,
+      weightMin:
+        weightMin != null && Number.isFinite(weightMin) ? weightMin : undefined,
+      weightMax:
+        weightMax != null && Number.isFinite(weightMax) ? weightMax : undefined,
+      sortBy: query.sortBy === 'weight' ? 'weight' : 'createdAt',
+      order: query.order === 'asc' ? 'asc' : 'desc',
+      limit,
+    });
+
     return { orders };
+  }
+
+  async track(authUser: AuthUser, orderId: string) {
+    const order = await this.findVisibleOrderOrThrow(authUser, orderId);
+
+    const [route, latestReading, activeAlerts] = await Promise.all([
+      this.prisma.route.findFirst({
+        where: { orderId },
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.telemetryReading.findFirst({
+        where: { orderId },
+        orderBy: { ts: 'desc' },
+      }),
+      this.prisma.alert.findMany({
+        where: { orderId, active: true },
+        orderBy: { createdAt: 'desc' },
+        take: 20,
+      }),
+    ]);
+
+    return {
+      order,
+      route,
+      latestReading,
+      alerts: activeAlerts,
+    };
   }
 
   async getById(authUser: AuthUser, orderId: string) {

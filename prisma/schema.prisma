@@ -25,6 +25,29 @@ enum OrderStatus {
   CANCELLED
 }
 
+enum DeviceType {
+  GPS_TRACKER
+  SENSOR
+  CAMERA
+}
+
+enum AlertType {
+  TEMPERATURE_HIGH
+  TEMPERATURE_LOW
+  HUMIDITY_HIGH
+  HUMIDITY_LOW
+  TILT
+  DOOR_OPEN
+  SPEED
+  OFFLINE
+}
+
+enum AlertSeverity {
+  INFO
+  WARNING
+  CRITICAL
+}
+
 model User {
   id           String   @id @default(cuid())
   email        String   @unique
@@ -89,7 +112,16 @@ model Vehicle {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
+  lastLatitude    Float?
+  lastLongitude   Float?
+  lastSpeedKmh    Float?
+  lastTelemetryAt DateTime?
+
   carrier CarrierProfile @relation(fields: [carrierId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  devices  Device[]
+  readings TelemetryReading[]
+  alerts   Alert[]
 
   @@unique([carrierId, plateNumber])
   @@index([carrierId])
@@ -128,6 +160,8 @@ model Order {
   carrier        CarrierProfile? @relation(fields: [carrierId], references: [id], onDelete: SetNull, onUpdate: Cascade)
   routes         Route[]
   trackingEvents OrderTracking[]
+  telemetry      TelemetryReading[]
+  alerts         Alert[]
 
   @@index([clientId])
   @@index([carrierId])
@@ -221,4 +255,76 @@ model RefreshToken {
 
   @@index([userId, revokedAt])
   @@index([expiresAt])
+}
+
+model Device {
+  id           String     @id @default(cuid())
+  name         String
+  deviceKey    String     @unique
+  apiKeyHash   String     @unique
+  type         DeviceType
+  vehicleId    String?
+  isActive     Boolean    @default(true)
+  firmware     String?
+  lastSeenAt   DateTime?
+  lastLatitude Float?
+  lastLongitude Float?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  vehicle  Vehicle?           @relation(fields: [vehicleId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  readings TelemetryReading[]
+  alerts   Alert[]
+
+  @@index([vehicleId])
+  @@index([isActive])
+}
+
+model TelemetryReading {
+  id          String   @id @default(cuid())
+  deviceId    String
+  vehicleId   String?
+  orderId     String?
+  lat         Float
+  lng         Float
+  speedKmh    Float?
+  temperature Float?
+  humidity    Float?
+  tilt        Float?
+  doorOpen    Boolean?
+  batteryPct  Float?
+  photoUrl    String?
+  source      String   @default("mqtt")
+  raw         Json?
+  ts          DateTime
+  createdAt   DateTime @default(now())
+
+  device  Device   @relation(fields: [deviceId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  vehicle Vehicle? @relation(fields: [vehicleId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  order   Order?   @relation(fields: [orderId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@index([deviceId, ts])
+  @@index([vehicleId, ts])
+  @@index([orderId, ts])
+}
+
+model Alert {
+  id         String        @id @default(cuid())
+  deviceId   String
+  vehicleId  String?
+  orderId    String?
+  type       AlertType
+  severity   AlertSeverity
+  message    String
+  metadata   Json?
+  active     Boolean       @default(true)
+  resolvedAt DateTime?
+  createdAt  DateTime      @default(now())
+
+  device  Device   @relation(fields: [deviceId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  vehicle Vehicle? @relation(fields: [vehicleId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  order   Order?   @relation(fields: [orderId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([vehicleId, active])
+  @@index([createdAt])
 }

@@ -14,6 +14,12 @@ import { RoutesModule } from './routes/routes.module';
 import { UploadsModule } from './uploads/uploads.module';
 import { CheckpointLoadsModule } from './checkpoint-loads/checkpoint-loads.module';
 import { PredictionsModule } from './predictions/predictions.module';
+import { DevicesModule } from './devices/devices.module';
+import { TelemetryModule } from './telemetry/telemetry.module';
+import { AlertsModule } from './alerts/alerts.module';
+import { RealtimeModule } from './realtime/realtime.module';
+import { AnalyticsModule } from './analytics/analytics.module';
+import { RouteConditionsModule } from './route-conditions/route-conditions.module';
 
 @Module({
   imports: [
@@ -29,6 +35,12 @@ import { PredictionsModule } from './predictions/predictions.module';
     UploadsModule,
     CheckpointLoadsModule,
     PredictionsModule,
+    DevicesModule,
+    TelemetryModule,
+    AlertsModule,
+    RealtimeModule,
+    AnalyticsModule,
+    RouteConditionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

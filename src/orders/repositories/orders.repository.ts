@@ -23,13 +23,59 @@ export class OrdersRepository {
     });
   }
 
-  async findAvailable(): Promise<Order[]> {
-    return this.prisma.order.findMany({
-      where: {
-        carrierId: null,
-        status: { in: [OrderStatus.NEW, OrderStatus.SEARCHING] },
+  async findAvailable(params: {
+    origin?: string;
+    destination?: string;
+    weightMin?: number;
+    weightMax?: number;
+    sortBy?: 'createdAt' | 'weight';
+    order?: 'asc' | 'desc';
+    limit?: number;
+  }): Promise<Order[]> {
+    const sortBy = params.sortBy === 'weight' ? 'weight' : 'createdAt';
+    const order = params.order === 'asc' ? 'asc' : 'desc';
+
+    const where: Prisma.OrderWhereInput = {
+      carrierId: null,
+      status: { in: [OrderStatus.NEW, OrderStatus.SEARCHING] },
+      weight: {
+        gte: params.weightMin,
+        lte: params.weightMax,
       },
-      orderBy: { createdAt: 'desc' },
+    };
+
+    if (params.origin) {
+      where.OR = [
+        { origin: { contains: params.origin, mode: 'insensitive' } },
+        { originCity: { contains: params.origin, mode: 'insensitive' } },
+      ];
+    }
+
+    if (params.destination) {
+      where.AND = [
+        {
+          OR: [
+            {
+              destination: {
+                contains: params.destination,
+                mode: 'insensitive',
+              },
+            },
+            {
+              destinationCity: {
+                contains: params.destination,
+                mode: 'insensitive',
+              },
+            },
+          ],
+        },
+      ];
+    }
+
+    return this.prisma.order.findMany({
+      where,
+      orderBy: { [sortBy]: order },
+      take: params.limit,
     });
   }
 

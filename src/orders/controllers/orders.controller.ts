@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -31,6 +32,7 @@ import {
 } from '../dto/order-response.dto';
 import { UpdateOrderDto } from '../dto/update-order.dto';
 import { UpdateOrderStatusDto } from '../dto/update-order-status.dto';
+import { ListAvailableOrdersQueryDto } from '../dto/list-available-orders-query.dto';
 import { OrderAssignmentService } from '../services/order-assignment.service';
 import { OrdersService } from '../services/orders.service';
 
@@ -78,10 +80,35 @@ export class OrdersController {
   }
 
   @Get('available')
-  @ApiOperation({ summary: 'List orders available for carrier assignment' })
+  @ApiOperation({
+    summary: 'List orders available for carrier assignment',
+    description:
+      'Фильтры: origin, destination, weightMin, weightMax, sortBy, order, limit.',
+  })
   @ApiOkResponse({ type: OrdersListResponseDto })
-  available() {
-    return this.ordersService.listAvailable();
+  available(@Query() query: ListAvailableOrdersQueryDto) {
+    return this.ordersService.listAvailable(query);
+  }
+
+  @Get(':id/track')
+  @ApiOperation({
+    summary: 'Track an order (route + latest position + alerts)',
+    description:
+      'Всё для карты одного заказа: данные заказа, маршрут-полилиния, последняя телеметрия и активные алерты.',
+  })
+  @ApiOkResponse({
+    schema: {
+      type: 'object',
+      properties: {
+        order: { type: 'object' },
+        route: { type: 'object', nullable: true },
+        latestReading: { type: 'object', nullable: true },
+        alerts: { type: 'array' },
+      },
+    },
+  })
+  track(@CurrentUser() authUser: AuthUser, @Param('id') orderId: string) {
+    return this.ordersService.track(authUser, orderId);
   }
 
   @Get(':id')

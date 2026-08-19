@@ -21,6 +21,16 @@ services:
       timeout: 5s
       retries: 10
 
+  mosquitto:
+    image: eclipse-mosquitto:2
+    container_name: caspex-mosquitto
+    restart: unless-stopped
+    ports:
+      - "1883:1883"
+    volumes:
+      - ./mosquitto/config:/mosquitto/config:ro
+      - caspex_mosquitto_data:/mosquitto/data
+
   app:
     build:
       context: .
@@ -30,6 +40,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      mosquitto:
+        condition: service_started
     env_file:
       - .env
     ports:
@@ -40,3 +52,4 @@ services:
 volumes:
   caspex_postgres_data:
   caspex_uploads_data:
+  caspex_mosquitto_data:
