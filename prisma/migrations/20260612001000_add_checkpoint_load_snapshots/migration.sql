@@ -8,6 +8,7 @@ CREATE TABLE "CheckpointLoadSnapshot" (
     "region" TEXT,
     "waitingAreaCount" INTEGER NOT NULL DEFAULT 0,
     "activeTruckNumbers" TEXT[] DEFAULT ARRAY[]::TEXT[],
+    "entryTimes" TEXT[] DEFAULT ARRAY[]::TEXT[],
     "raw" JSONB NOT NULL,
     "fetchedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
