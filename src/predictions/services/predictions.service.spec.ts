@@ -56,7 +56,7 @@ describe('PredictionsService', () => {
 
     aggregatorServiceMock.aggregate.mockReturnValue({
       route: { distanceKm: 1200, durationHours: 16 },
-      weather: { risk: 'low', wind: 10, rain: false },
+      weather: { risk: 'low', wind: 10, temperature: 25, rain: false, heat: false, dust: false },
       checkpoints: [],
       railway: [],
     });

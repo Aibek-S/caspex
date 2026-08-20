@@ -8,7 +8,7 @@ describe('OpenAiService', () => {
 
   const mockInput: AggregatedInput = {
     route: { distanceKm: 1200, durationHours: 16 },
-    weather: { risk: 'medium', wind: 14, rain: true },
+    weather: { risk: 'medium', wind: 14, temperature: 30, rain: true, heat: false, dust: false },
     checkpoints: [{ name: 'Темир Баба', load: 90, wait: 130 }],
     railway: [{ station: 'Бейнеу', load: 75 }],
   };

@@ -80,6 +80,24 @@ export class RoutesService {
     };
   }
 
+  async calculateForOrder(
+    order: Pick<
+      Order,
+      'id' | 'originLat' | 'originLng' | 'destinationLat' | 'destinationLng'
+    >,
+  ) {
+    const coords = this.resolveCoordinates({}, order);
+    const orsResponse = await this.requestRoute(coords);
+    const parsed = this.parseRouteResponse(orsResponse);
+
+    return this.routesRepository.create({
+      orderId: order.id,
+      distanceKm: parsed.distanceKm,
+      durationMinutes: parsed.durationMinutes,
+      geometry: parsed.geometry,
+    });
+  }
+
   private resolveCoordinates(
     dto: CalculateRouteDto,
     order: Pick<

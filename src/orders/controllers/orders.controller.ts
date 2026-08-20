@@ -27,6 +27,7 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import type { AuthUser } from '../../common/types/auth-user.type';
 import { CreateOrderDto } from '../dto/create-order.dto';
 import {
+  OrderCreationResponseDto,
   OrderEnvelopeResponseDto,
   OrdersListResponseDto,
 } from '../dto/order-response.dto';
@@ -52,7 +53,7 @@ export class OrdersController {
 
   @Post()
   @ApiOperation({ summary: 'Create order for current user' })
-  @ApiCreatedResponse({ type: OrderEnvelopeResponseDto })
+  @ApiCreatedResponse({ type: OrderCreationResponseDto })
   @ApiBadRequestResponse({
     type: ErrorResponseDto,
     description: 'Invalid payload',

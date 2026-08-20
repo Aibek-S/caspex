@@ -10,7 +10,10 @@ export type AggregatedInput = {
   weather: {
     risk: 'low' | 'medium' | 'high';
     wind: number;
+    temperature: number;
     rain: boolean;
+    heat: boolean;
+    dust: boolean;
   };
   checkpoints: Array<{
     name: string;
@@ -53,20 +56,30 @@ export class AggregatorService {
     points: WeatherPoint[],
   ): AggregatedInput['weather'] {
     if (points.length === 0) {
-      return { risk: 'low', wind: 0, rain: false };
+      return { risk: 'low', wind: 0, temperature: 0, rain: false, heat: false, dust: false };
     }
 
     const maxWind = Math.max(...points.map((p) => p.windSpeed));
+    const maxTemperature = Math.max(...points.map((p) => p.temperature));
     const hasRain = points.some((p) => p.rain);
+    const hasHeat = maxTemperature >= 35;
+    const hasDust = points.some((p) => /dust|sand|haze/i.test(p.description));
 
     let risk: 'low' | 'medium' | 'high' = 'low';
-    if (maxWind > 20 || hasRain) {
+    if (maxWind > 20 || hasRain || hasHeat || hasDust) {
       risk = 'medium';
     }
-    if (maxWind > 30) {
+    if (maxWind > 30 || maxTemperature >= 40) {
       risk = 'high';
     }
 
-    return { risk, wind: maxWind, rain: hasRain };
+    return {
+      risk,
+      wind: maxWind,
+      temperature: maxTemperature,
+      rain: hasRain,
+      heat: hasHeat,
+      dust: hasDust,
+    };
   }
 }

@@ -34,7 +34,7 @@ Return ONLY valid JSON with no markdown formatting, no code blocks, no extra tex
   "shortExplanation": "string (1-2 sentences in Russian)"
 }
 
-Consider: route distance & duration, weather conditions (wind, rain, snow), checkpoint load & wait times, railway node load.`;
+Consider: route distance & duration, weather conditions (wind, rain, snow, heat, dust), checkpoint load & wait times, railway node load.`;
 
 @Injectable()
 export class OpenAiService {

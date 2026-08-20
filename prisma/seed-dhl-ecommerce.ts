@@ -2,38 +2,40 @@ import 'dotenv/config';
 import { PrismaClient, OrderStatus } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
+import { resolveMangystauDistance } from './mangystau-distance';
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
 const origins = [
-  { city: 'Shanghai', country: 'China' },
-  { city: 'Shenzhen', country: 'China' },
-  { city: 'Ningbo', country: 'China' },
-  { city: 'Hong Kong', country: 'China' },
-  { city: 'Dubai', country: 'UAE' },
-  { city: 'Hamburg', country: 'Germany' },
+  { city: 'Aktau', country: 'Kazakhstan' },
+  { city: 'Zhanaozen', country: 'Kazakhstan' },
+  { city: 'Shetpe', country: 'Kazakhstan' },
+  { city: 'Beineu', country: 'Kazakhstan' },
+  { city: 'Kuryk', country: 'Kazakhstan' },
+  { city: 'Zhetybai', country: 'Kazakhstan' },
 ];
 
 const destinations = [
   { city: 'Aktau', country: 'Kazakhstan' },
-  { city: 'Almaty', country: 'Kazakhstan' },
-  { city: 'Astana', country: 'Kazakhstan' },
-  { city: 'Shymkent', country: 'Kazakhstan' },
-  { city: 'Karaganda', country: 'Kazakhstan' },
-  { city: 'Atyrau', country: 'Kazakhstan' },
-  { city: 'Baku', country: 'Azerbaijan' },
-  { city: 'Tashkent', country: 'Uzbekistan' },
+  { city: 'Zhanaozen', country: 'Kazakhstan' },
+  { city: 'Shetpe', country: 'Kazakhstan' },
+  { city: 'Beineu', country: 'Kazakhstan' },
+  { city: 'Taushyk', country: 'Kazakhstan' },
+  { city: 'Senek', country: 'Kazakhstan' },
+  { city: 'Kyzylsay', country: 'Kazakhstan' },
+  { city: 'Akzhigit', country: 'Kazakhstan' },
+  { city: 'Borankul', country: 'Kazakhstan' },
 ];
 
 const cargoTypes = [
-  'Electronics',
-  'Industrial Equipment',
-  'Food Products',
-  'Textiles',
+  'Food and Water',
+  'Construction Materials',
+  'Fuel and Lubricants',
   'Auto Parts',
-  'Chemicals',
+  'Industrial Equipment',
+  'Household Goods',
 ];
 
 function randomItem<T>(arr: T[]): T {
@@ -62,6 +64,7 @@ async function main() {
 
     const origin = randomItem(origins);
     const destination = randomItem(destinations);
+    const regionalDistance = resolveMangystauDistance(origin.city, destination.city);
     const status = randomItem([OrderStatus.SEARCHING, OrderStatus.ASSIGNED, OrderStatus.IN_TRANSIT, OrderStatus.DELIVERED]);
     const client = randomItem(clients);
     const createdAt = new Date(Date.now() - Math.floor(Math.random() * 30) * 86400000);
@@ -81,7 +84,7 @@ async function main() {
         destinationCity: destination.city,
         destinationCountry: destination.country,
         estimatedPrice: Math.floor(Math.random() * 5000) + 300,
-        estimatedDeliveryTime: Math.floor(Math.random() * 200) + 48,
+        estimatedDeliveryTime: regionalDistance?.estimatedDurationMinutes ?? Math.floor(Math.random() * 200) + 48,
         estimatedCarrierSearchTime: 60,
         status,
         comment,
@@ -124,8 +127,8 @@ async function main() {
       await prisma.route.create({
         data: {
           orderId: order.id,
-          distanceKm: Math.floor(Math.random() * 4000) + 500,
-          durationMinutes: Math.floor(Math.random() * 6000) + 600,
+          distanceKm: regionalDistance?.distanceKm ?? Math.floor(Math.random() * 4000) + 500,
+          durationMinutes: regionalDistance?.estimatedDurationMinutes ?? Math.floor(Math.random() * 6000) + 600,
           geometry: { type: 'LineString', coordinates: [] },
         },
       });

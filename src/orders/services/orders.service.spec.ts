@@ -17,6 +17,12 @@ describe('OrdersService', () => {
   const trackingServiceMock = {
     recordOrderEvent: jest.fn(),
   };
+  const settlementsServiceMock = {
+    findOne: jest.fn(),
+  };
+  const routesServiceMock = {
+    calculateForOrder: jest.fn(),
+  };
 
   const clientUser = {
     id: 'client-1',
@@ -65,6 +71,8 @@ describe('OrdersService', () => {
       ordersRepositoryMock as never,
       carrierProfileRepositoryMock as never,
       trackingServiceMock as never,
+      settlementsServiceMock as never,
+      routesServiceMock as never,
     );
   });
 
@@ -126,6 +134,109 @@ describe('OrdersService', () => {
         },
       ),
     ).rejects.toThrow(ForbiddenException);
+  });
+
+  it('resolves coordinates from selected settlements', async () => {
+    settlementsServiceMock.findOne
+      .mockResolvedValueOnce({
+        settlement: {
+          id: 'aktau',
+          name: 'Aktau',
+          latitude: 43.65,
+          longitude: 51.16,
+        },
+      })
+      .mockResolvedValueOnce({
+        settlement: {
+          id: 'kuryk',
+          name: 'Kuryk',
+          latitude: 42.49,
+          longitude: 51.68,
+        },
+      });
+    ordersRepositoryMock.create.mockResolvedValue(order);
+
+    await service.create(clientUser, {
+      title: 'Regional shipment',
+      cargoType: 'GENERAL',
+      weight: 12,
+      volume: 40,
+      originSettlementId: 'aktau',
+      destinationSettlementId: 'kuryk',
+    });
+
+    expect(ordersRepositoryMock.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        origin: 'Aktau',
+        originSettlementId: 'aktau',
+        originLat: 43.65,
+        destination: 'Kuryk',
+        destinationSettlementId: 'kuryk',
+        destinationLng: 51.68,
+      }),
+    );
+  });
+
+  it('adds route ETA when route calculation succeeds', async () => {
+    ordersRepositoryMock.create.mockResolvedValue(order);
+    routesServiceMock.calculateForOrder.mockResolvedValue({
+      id: 'route-1',
+      orderId: order.id,
+      distanceKm: 141.4,
+      durationMinutes: 141,
+      geometry: { type: 'LineString', coordinates: [] },
+      createdAt: new Date(),
+    });
+    ordersRepositoryMock.update.mockResolvedValue({
+      ...order,
+      estimatedDeliveryTime: 3,
+    });
+
+    const result = await service.create(clientUser, {
+      title: 'Transport cargo',
+      cargoType: 'GENERAL',
+      weight: 12,
+      volume: 40,
+      origin: 'Aktau',
+      destination: 'Kuryk',
+      originLat: 43.65,
+      originLng: 51.16,
+      destinationLat: 42.49,
+      destinationLng: 51.68,
+    });
+
+    expect(routesServiceMock.calculateForOrder).toHaveBeenCalledWith(order);
+    expect(ordersRepositoryMock.update).toHaveBeenCalledWith(order.id, {
+      estimatedDeliveryTime: 3,
+    });
+    expect(result.routeCalculated).toBe(true);
+  });
+
+  it('creates the order when route calculation is unavailable', async () => {
+    ordersRepositoryMock.create.mockResolvedValue(order);
+    routesServiceMock.calculateForOrder.mockRejectedValue(
+      new Error('OpenRouteService is unavailable'),
+    );
+
+    const result = await service.create(clientUser, {
+      title: 'Transport cargo',
+      cargoType: 'GENERAL',
+      weight: 12,
+      volume: 40,
+      origin: 'Aktau',
+      destination: 'Kuryk',
+      originLat: 43.65,
+      originLng: 51.16,
+      destinationLat: 42.49,
+      destinationLng: 51.68,
+    });
+
+    expect(result).toEqual({
+      order,
+      route: null,
+      routeCalculated: false,
+    });
+    expect(ordersRepositoryMock.update).not.toHaveBeenCalled();
   });
 
   it('hides unrelated orders', async () => {

@@ -20,6 +20,7 @@ import { AlertsModule } from './alerts/alerts.module';
 import { RealtimeModule } from './realtime/realtime.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { RouteConditionsModule } from './route-conditions/route-conditions.module';
+import { SettlementsModule } from './settlements/settlements.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { RouteConditionsModule } from './route-conditions/route-conditions.modul
     RealtimeModule,
     AnalyticsModule,
     RouteConditionsModule,
+    SettlementsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

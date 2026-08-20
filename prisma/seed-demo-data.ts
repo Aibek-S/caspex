@@ -3,30 +3,29 @@ import { PrismaClient, OrderStatus, UserRole } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
 import * as bcrypt from 'bcrypt';
+import { resolveMangystauDistance } from './mangystau-distance';
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
 const clients = [
-  { email: 'astana-logistics@mail.kz', firstName: 'Асхат', lastName: 'Нурланов', company: 'ТОО Astana Logistics', city: 'Astana', phone: '+77011112233' },
-  { email: 'almaty-trade@mail.kz', firstName: 'Дамир', lastName: 'Сериков', company: 'ТОО Almaty Trade', city: 'Almaty', phone: '+77022223344' },
+  { email: 'aktau-logistics@mail.kz', firstName: 'Асхат', lastName: 'Нурланов', company: 'ТОО Aktau Logistics', city: 'Aktau', phone: '+77011112233' },
+  { email: 'shetpe-trade@mail.kz', firstName: 'Дамир', lastName: 'Сериков', company: 'ТОО Shetpe Trade', city: 'Shetpe', phone: '+77022223344' },
   { email: 'aktau-shipping@mail.kz', firstName: 'Марат', lastName: 'Кусаинов', company: 'ТОО Aktau Shipping', city: 'Aktau', phone: '+77033334455' },
-  { email: 'shymkent-food@mail.kz', firstName: 'Бахыт', lastName: 'Омаров', company: 'ТОО Shymkent Food', city: 'Shymkent', phone: '+77044445566' },
-  { email: 'karaganda-auto@mail.kz', firstName: 'Сергей', lastName: 'Иванов', company: 'ТОО Karaganda Auto Parts', city: 'Karaganda', phone: '+77055556677' },
-  { email: 'atyrau-oil@mail.kz', firstName: 'Руслан', lastName: 'Ермеков', company: 'ТОО Atyrau Oil Supply', city: 'Atyrau', phone: '+77066667788' },
-  { email: 'kostanay-grain@mail.kz', firstName: 'Виктор', lastName: 'Фёдоров', company: 'ТОО Kostanay Grain Export', city: 'Kostanay', phone: '+77077778899' },
-  { email: 'pavlodar-chem@mail.kz', firstName: 'Алексей', lastName: 'Козлов', company: 'ТОО Pavlodar Chemicals', city: 'Pavlodar', phone: '+77088889900' },
-  { email: 'baku-logistics@mail.az', firstName: 'Эльчин', lastName: 'Мамедов', company: 'Baku Logistics LLC', city: 'Baku', phone: '+994501234567' },
-  { email: 'tashkent-textile@mail.uz', firstName: 'Фаррух', lastName: 'Рахимов', company: 'Tashkent Textile Ltd', city: 'Tashkent', phone: '+998901234567' },
+  { email: 'zhanaozen-food@mail.kz', firstName: 'Бахыт', lastName: 'Омаров', company: 'ТОО Zhanaozen Food Supply', city: 'Zhanaozen', phone: '+77044445566' },
+  { email: 'zhetybai-auto@mail.kz', firstName: 'Сергей', lastName: 'Иванов', company: 'ТОО Zhetybai Auto Parts', city: 'Zhetybai', phone: '+77055556677' },
+  { email: 'kuryk-oil@mail.kz', firstName: 'Руслан', lastName: 'Ермеков', company: 'ТОО Kuryk Fuel Supply', city: 'Kuryk', phone: '+77066667788' },
+  { email: 'beineu-grain@mail.kz', firstName: 'Виктор', lastName: 'Фёдоров', company: 'ТОО Beineu Grain Supply', city: 'Beineu', phone: '+77077778899' },
+  { email: 'aktau-industrial@mail.kz', firstName: 'Алексей', lastName: 'Козлов', company: 'ТОО Aktau Industrial Supply', city: 'Aktau', phone: '+77088889900' },
 ];
 
 const carriers = [
-  { email: 'dostyk-carrier@mail.kz', firstName: 'Ержан', lastName: 'Сагынтаев', company: 'ТОО Dostyk Trans', city: 'Dostyk', phone: '+77099990011', transportType: 'truck', experienceYears: 8 },
-  { email: 'trans-express@mail.kz', firstName: 'Талгат', lastName: 'Муратов', company: 'Trans Express KZ', city: 'Almaty', phone: '+77099990022', transportType: 'truck', experienceYears: 12 },
+  { email: 'fort-shevchenko-carrier@mail.kz', firstName: 'Ержан', lastName: 'Сагынтаев', company: 'ТОО Fort-Shevchenko Trans', city: 'Fort-Shevchenko', phone: '+77099990011', transportType: 'truck', experienceYears: 8 },
+  { email: 'shetpe-express@mail.kz', firstName: 'Талгат', lastName: 'Муратов', company: 'Shetpe Express', city: 'Shetpe', phone: '+77099990022', transportType: 'truck', experienceYears: 12 },
   { email: 'caspian-logistics@mail.kz', firstName: 'Азамат', lastName: 'Беков', company: 'Caspian Logistics', city: 'Aktau', phone: '+77099990033', transportType: 'truck', experienceYears: 5 },
-  { email: 'east-west-cargo@mail.kz', firstName: 'Нурлан', lastName: 'Ашимов', company: 'East West Cargo', city: 'Almaty', phone: '+77099990044', transportType: 'truck', experienceYears: 15 },
-  { email: 'steppe-freight@mail.kz', firstName: 'Димаш', lastName: 'Кунанбаев', company: 'Steppe Freight KZ', city: 'Astana', phone: '+77099990055', transportType: 'truck', experienceYears: 3 },
+  { email: 'mangystau-cargo@mail.kz', firstName: 'Нурлан', lastName: 'Ашимов', company: 'Mangystau Cargo', city: 'Zhanaozen', phone: '+77099990044', transportType: 'truck', experienceYears: 15 },
+  { email: 'beineu-freight@mail.kz', firstName: 'Димаш', lastName: 'Кунанбаев', company: 'Beineu Freight', city: 'Beineu', phone: '+77099990055', transportType: 'truck', experienceYears: 3 },
 ];
 
 const vehiclesData = [
@@ -41,6 +40,14 @@ const vehiclesData = [
 
 async function main() {
   const saltRounds = Number(process.env.BCRYPT_SALT_ROUNDS ?? '12');
+
+  // Remove the legacy non-regional demo carrier left by older seed versions.
+  const removedLegacyCarrier = await prisma.user.deleteMany({
+    where: { email: 'dostyk-carrier@mail.kz' },
+  });
+  if (removedLegacyCarrier.count > 0) {
+    console.log(`Removed ${removedLegacyCarrier.count} legacy Dostyk demo carrier`);
+  }
 
   // ── Clients ─────────────────────────────────────────────
   console.log('Creating clients...');
@@ -161,26 +168,28 @@ async function main() {
   );
 
   const originPools = [
-    { city: 'Shanghai', country: 'China' },
-    { city: 'Shenzhen', country: 'China' },
-    { city: 'Ningbo', country: 'China' },
-    { city: 'Dubai', country: 'UAE' },
-    { city: 'Hamburg', country: 'Germany' },
-    { city: 'Istanbul', country: 'Turkey' },
+    { city: 'Aktau', country: 'Kazakhstan' },
+    { city: 'Zhanaozen', country: 'Kazakhstan' },
+    { city: 'Shetpe', country: 'Kazakhstan' },
+    { city: 'Beineu', country: 'Kazakhstan' },
+    { city: 'Kuryk', country: 'Kazakhstan' },
+    { city: 'Zhetybai', country: 'Kazakhstan' },
   ];
 
   const destPools = [
-    { city: 'Almaty', country: 'Kazakhstan' },
-    { city: 'Astana', country: 'Kazakhstan' },
     { city: 'Aktau', country: 'Kazakhstan' },
-    { city: 'Shymkent', country: 'Kazakhstan' },
-    { city: 'Karaganda', country: 'Kazakhstan' },
-    { city: 'Atyrau', country: 'Kazakhstan' },
-    { city: 'Baku', country: 'Azerbaijan' },
-    { city: 'Tashkent', country: 'Uzbekistan' },
+    { city: 'Zhanaozen', country: 'Kazakhstan' },
+    { city: 'Shetpe', country: 'Kazakhstan' },
+    { city: 'Beineu', country: 'Kazakhstan' },
+    { city: 'Kuryk', country: 'Kazakhstan' },
+    { city: 'Taushyk', country: 'Kazakhstan' },
+    { city: 'Senek', country: 'Kazakhstan' },
+    { city: 'Kyzylsay', country: 'Kazakhstan' },
+    { city: 'Akzhigit', country: 'Kazakhstan' },
+    { city: 'Borankul', country: 'Kazakhstan' },
   ];
 
-  const cargoTypes = ['Electronics', 'Industrial Equipment', 'Food Products', 'Textiles', 'Auto Parts', 'Chemicals'];
+  const cargoTypes = ['Food and Water', 'Construction Materials', 'Fuel and Lubricants', 'Auto Parts', 'Industrial Equipment', 'Household Goods'];
   const statuses = [OrderStatus.SEARCHING, OrderStatus.ASSIGNED, OrderStatus.IN_TRANSIT, OrderStatus.DELIVERED];
 
   function pick<T>(arr: T[]): T {
@@ -195,6 +204,7 @@ async function main() {
     const client = pick(allClients);
     const origin = pick(originPools);
     const dest = pick(destPools);
+    const regionalDistance = resolveMangystauDistance(origin.city, dest.city);
     const cargoType = pick(cargoTypes);
     const status = pick(statuses);
     const createdAt = new Date(Date.now() - Math.floor(Math.random() * 30) * 86400000);
@@ -216,7 +226,7 @@ async function main() {
         destinationCity: dest.city,
         destinationCountry: dest.country,
         estimatedPrice: Math.floor(Math.random() * 5000) + 300,
-        estimatedDeliveryTime: Math.floor(Math.random() * 200) + 48,
+        estimatedDeliveryTime: regionalDistance?.estimatedDurationMinutes ?? Math.floor(Math.random() * 200) + 48,
         estimatedCarrierSearchTime: 60,
         status,
         comment,
@@ -259,8 +269,8 @@ async function main() {
       await prisma.route.create({
         data: {
           orderId: order.id,
-          distanceKm: Math.floor(Math.random() * 4000) + 500,
-          durationMinutes: Math.floor(Math.random() * 6000) + 600,
+          distanceKm: regionalDistance?.distanceKm ?? Math.floor(Math.random() * 4000) + 500,
+          durationMinutes: regionalDistance?.estimatedDurationMinutes ?? Math.floor(Math.random() * 6000) + 600,
           geometry: { type: 'LineString', coordinates: [] },
         },
       });
