@@ -10,7 +10,8 @@ const prisma = new PrismaClient({ adapter });
 const API_BASE = 'https://tablo-railways.kz/api';
 
 const headers = {
-  'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:151.0) Gecko/20100101 Firefox/151.0',
+  'User-Agent':
+    'Mozilla/5.0 (X11; Linux x86_64; rv:151.0) Gecko/20100101 Firefox/151.0',
   Accept: 'application/json',
 };
 
@@ -37,15 +38,18 @@ function getCoords(s: any): { lat: number; lng: number } | null {
   return null;
 }
 
-async function fetchTripsForStation(
-  stId: string,
-): Promise<{ departuresPerDay: number; currentLoad: number; avgDelayMinutes: number }> {
+async function fetchTripsForStation(stId: string): Promise<{
+  departuresPerDay: number;
+  currentLoad: number;
+  avgDelayMinutes: number;
+}> {
   try {
     const res = await fetch(`${API_BASE}/trips-new?stId=${stId}`, {
       headers,
       signal: AbortSignal.timeout(5000),
     });
-    if (!res.ok) return { departuresPerDay: 0, currentLoad: 0, avgDelayMinutes: 0 };
+    if (!res.ok)
+      return { departuresPerDay: 0, currentLoad: 0, avgDelayMinutes: 0 };
 
     const trips: any[] = await res.json();
     let totalDelay = 0;
@@ -76,10 +80,9 @@ async function main() {
   const seen = new Set<string>();
   const stations: any[] = [];
 
-  const res = await fetch(
-    `${API_BASE}/stations?page=0&countryCode=KZ`,
-    { headers },
-  );
+  const res = await fetch(`${API_BASE}/stations?page=0&countryCode=KZ`, {
+    headers,
+  });
   const data: any = await res.json();
 
   for (const s of data.content ?? []) {
@@ -132,9 +135,7 @@ async function main() {
       updated++;
     }
 
-    process.stdout.write(
-      `\r  Processing... ${updated}/${stations.length}`,
-    );
+    process.stdout.write(`\r  Processing... ${updated}/${stations.length}`);
   }
 
   console.log(`\n\nDone. Updated ${updated} train stations.`);

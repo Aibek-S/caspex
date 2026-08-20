@@ -142,7 +142,34 @@ Body:
   "cargoPhotoUrl": "https://...", "productPhotoUrls": ["https://..."]
 }
 ```
-`originLat/originLng/destinationLat/destinationLng` — обязательные числа. Ответ: `{ order }` со `status: "SEARCHING"`.
+`originLat/originLng/destinationLat/destinationLng` — обязательные числа, **если** не переданы `originSettlementId`/`destinationSettlementId`. Ответ: `{ order, route, routeCalculated }` со `status: "SEARCHING"`.
+
+**Региональный режим (рекомендуемый для демо):** передай `originSettlementId` + `destinationSettlementId` из `GET /settlements` вместо координат — сервер сам подставит названия и координаты и посчитает маршрут через OpenRouteService:
+```json
+{
+  "title": "Продукты в Жанаозен",
+  "cargoType": "FOOD", "weight": 2000, "volume": 8,
+  "originSettlementId": "aktau",
+  "destinationSettlementId": "zhanaozen"
+}
+```
+Ответ:
+```json
+{
+  "order": { "origin": "Aktau", "originCity": "Aktau", "originSettlementId": "aktau",
+             "destination": "Zhanaozen", "destinationSettlementId": "zhanaozen",
+             "originLat": 43.65, "originLng": 51.16, "destinationLat": 43.34, "destinationLng": 52.86,
+             "estimatedDeliveryTime": 2, "routeCalculated": true },
+  "route": { "id": "...", "distanceKm": 149.08, "durationMinutes": 101.7,
+             "geometry": { "type": "LineString", "coordinates": [[lng, lat], ...] }, "createdAt": "..." },
+  "routeCalculated": true
+}
+```
+
+### GET /settlements — публичный (или Bearer) — список поселений Мангистау
+→ `{ settlements: Settlement[] }`. Нужен для форм «откуда/куда» и авто-маршрута.
+`Settlement = { id, name, nameRu, nameKk, type: "city"|"town"|"village"|"railway_station", district, latitude, longitude }`
+`id` — стабильный slug (`aktau`, `zhanaozen`, `fort-shevchenko`, `shetpe`, `beineu`...). Доступны: 33 поселения, районы: Aktau, Munaily, Tupkaragan, Karakiya, Mangystau, Beineu, Zhanaozen.
 
 ### GET /orders — Bearer — мои заказы (клиент — созданные, перевозчик — взятые)
 → `{ orders: Order[] }`

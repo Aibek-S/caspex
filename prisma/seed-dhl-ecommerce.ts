@@ -44,16 +44,22 @@ function randomItem<T>(arr: T[]): T {
 
 async function main() {
   const clients = await prisma.user.findMany({ where: { role: 'CLIENT' } });
-  if (clients.length === 0) throw new Error('No clients found. Run seed:demo first.');
+  if (clients.length === 0)
+    throw new Error('No clients found. Run seed:demo first.');
 
   const profiles = await prisma.carrierProfile.findMany();
-  if (profiles.length === 0) throw new Error('No carriers found. Run seed:demo first.');
+  if (profiles.length === 0)
+    throw new Error('No carriers found. Run seed:demo first.');
 
   const existingComments = new Set(
-    (await prisma.order.findMany({
-      where: { comment: { startsWith: 'DHL_SEED_' } },
-      select: { comment: true },
-    })).map((o) => o.comment).filter(Boolean),
+    (
+      await prisma.order.findMany({
+        where: { comment: { startsWith: 'DHL_SEED_' } },
+        select: { comment: true },
+      })
+    )
+      .map((o) => o.comment)
+      .filter(Boolean),
   );
 
   let created = 0;
@@ -64,15 +70,28 @@ async function main() {
 
     const origin = randomItem(origins);
     const destination = randomItem(destinations);
-    const regionalDistance = resolveMangystauDistance(origin.city, destination.city);
-    const status = randomItem([OrderStatus.SEARCHING, OrderStatus.ASSIGNED, OrderStatus.IN_TRANSIT, OrderStatus.DELIVERED]);
+    const regionalDistance = resolveMangystauDistance(
+      origin.city,
+      destination.city,
+    );
+    const status = randomItem([
+      OrderStatus.SEARCHING,
+      OrderStatus.ASSIGNED,
+      OrderStatus.IN_TRANSIT,
+      OrderStatus.DELIVERED,
+    ]);
     const client = randomItem(clients);
-    const createdAt = new Date(Date.now() - Math.floor(Math.random() * 30) * 86400000);
+    const createdAt = new Date(
+      Date.now() - Math.floor(Math.random() * 30) * 86400000,
+    );
 
     const order = await prisma.order.create({
       data: {
         clientId: client.id,
-        carrierId: status !== OrderStatus.SEARCHING ? randomItem(profiles).id : undefined,
+        carrierId:
+          status !== OrderStatus.SEARCHING
+            ? randomItem(profiles).id
+            : undefined,
         title: `${randomItem(cargoTypes)} DHL Shipment #${3000 + i}`,
         cargoType: randomItem(cargoTypes),
         weight: Number((Math.random() * 2000 + 50).toFixed(2)),
@@ -84,7 +103,9 @@ async function main() {
         destinationCity: destination.city,
         destinationCountry: destination.country,
         estimatedPrice: Math.floor(Math.random() * 5000) + 300,
-        estimatedDeliveryTime: regionalDistance?.estimatedDurationMinutes ?? Math.floor(Math.random() * 200) + 48,
+        estimatedDeliveryTime:
+          regionalDistance?.estimatedDurationMinutes ??
+          Math.floor(Math.random() * 200) + 48,
         estimatedCarrierSearchTime: 60,
         status,
         comment,
@@ -93,9 +114,14 @@ async function main() {
       },
     });
 
-    const events: { status: OrderStatus; location: string; timestamp: Date }[] = [
-      { status: OrderStatus.ASSIGNED, location: origin.city, timestamp: createdAt },
-    ];
+    const events: { status: OrderStatus; location: string; timestamp: Date }[] =
+      [
+        {
+          status: OrderStatus.ASSIGNED,
+          location: origin.city,
+          timestamp: createdAt,
+        },
+      ];
 
     if (status === OrderStatus.IN_TRANSIT || status === OrderStatus.DELIVERED) {
       events.push({
@@ -127,8 +153,12 @@ async function main() {
       await prisma.route.create({
         data: {
           orderId: order.id,
-          distanceKm: regionalDistance?.distanceKm ?? Math.floor(Math.random() * 4000) + 500,
-          durationMinutes: regionalDistance?.estimatedDurationMinutes ?? Math.floor(Math.random() * 6000) + 600,
+          distanceKm:
+            regionalDistance?.distanceKm ??
+            Math.floor(Math.random() * 4000) + 500,
+          durationMinutes:
+            regionalDistance?.estimatedDurationMinutes ??
+            Math.floor(Math.random() * 6000) + 600,
           geometry: { type: 'LineString', coordinates: [] },
         },
       });
@@ -137,7 +167,9 @@ async function main() {
     created++;
   }
 
-  console.log(`Created ${created} DHL orders with carriers, tracking, and routes.`);
+  console.log(
+    `Created ${created} DHL orders with carriers, tracking, and routes.`,
+  );
 }
 
 main()

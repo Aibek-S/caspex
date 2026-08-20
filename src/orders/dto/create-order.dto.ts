@@ -51,7 +51,8 @@ export class CreateOrderDto {
   @ApiProperty({
     example: 'aktau',
     required: false,
-    description: 'Settlement id from GET /settlements. When set, location and coordinates are resolved by the server.',
+    description:
+      'Settlement id from GET /settlements. When set, location and coordinates are resolved by the server.',
   })
   @Transform(trimString)
   @IsOptional()
@@ -83,7 +84,8 @@ export class CreateOrderDto {
   @ApiProperty({
     example: 'kuryk',
     required: false,
-    description: 'Settlement id from GET /settlements. When set, location and coordinates are resolved by the server.',
+    description:
+      'Settlement id from GET /settlements. When set, location and coordinates are resolved by the server.',
   })
   @Transform(trimString)
   @IsOptional()

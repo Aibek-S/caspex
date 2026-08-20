@@ -111,7 +111,9 @@ export class CalculatedRouteResponseDto {
   @ApiProperty({ example: 141 })
   durationMinutes: number;
 
-  @ApiProperty({ example: { type: 'LineString', coordinates: [[51.16, 43.65]] } })
+  @ApiProperty({
+    example: { type: 'LineString', coordinates: [[51.16, 43.65]] },
+  })
   geometry: object;
 }
 

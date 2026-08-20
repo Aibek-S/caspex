@@ -45,13 +45,16 @@ export class OrdersService {
       origin: originSettlement?.name ?? dto.origin!,
       originSettlementId: originSettlement?.id,
       originCity: originSettlement?.name ?? dto.originCity ?? null,
-      originCountry: originSettlement ? 'Kazakhstan' : dto.originCountry ?? null,
+      originCountry: originSettlement
+        ? 'Kazakhstan'
+        : (dto.originCountry ?? null),
       destination: destinationSettlement?.name ?? dto.destination!,
       destinationSettlementId: destinationSettlement?.id,
-      destinationCity: destinationSettlement?.name ?? dto.destinationCity ?? null,
+      destinationCity:
+        destinationSettlement?.name ?? dto.destinationCity ?? null,
       destinationCountry: destinationSettlement
         ? 'Kazakhstan'
-        : dto.destinationCountry ?? null,
+        : (dto.destinationCountry ?? null),
       originLat: originSettlement?.latitude ?? dto.originLat!,
       originLng: originSettlement?.longitude ?? dto.originLng!,
       destinationLat: destinationSettlement?.latitude ?? dto.destinationLat!,

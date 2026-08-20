@@ -27,7 +27,8 @@
     "seed:train": "ts-node prisma/seed-train-schedule.ts",
     "seed:demo": "ts-node prisma/seed-demo-data.ts",
     "seed:settlements": "ts-node prisma/seed-mangystau-settlements.ts",
-    "validate:mangystau": "ts-node prisma/validate-mangystau-data.ts"
+    "validate:mangystau": "ts-node prisma/validate-mangystau-data.ts",
+    "sim:fleet": "node scripts/mqtt-fleet-simulator.ts --demo"
   },
   "dependencies": {
     "@nestjs/axios": "^4.0.1",

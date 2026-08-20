@@ -23,6 +23,11 @@ describe('OrdersService', () => {
   const routesServiceMock = {
     calculateForOrder: jest.fn(),
   };
+  const prismaServiceMock = {
+    route: { findFirst: jest.fn() },
+    telemetryReading: { findFirst: jest.fn() },
+    alert: { findMany: jest.fn() },
+  };
 
   const clientUser = {
     id: 'client-1',
@@ -71,6 +76,7 @@ describe('OrdersService', () => {
       ordersRepositoryMock as never,
       carrierProfileRepositoryMock as never,
       trackingServiceMock as never,
+      prismaServiceMock as never,
       settlementsServiceMock as never,
       routesServiceMock as never,
     );

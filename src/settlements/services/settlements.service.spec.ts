@@ -31,7 +31,9 @@ describe('SettlementsService', () => {
   it('lists settlements ordered by district and name', async () => {
     prismaMock.settlement.findMany.mockResolvedValue([settlement]);
 
-    await expect(service.findAll()).resolves.toEqual({ settlements: [settlement] });
+    await expect(service.findAll()).resolves.toEqual({
+      settlements: [settlement],
+    });
     expect(prismaMock.settlement.findMany).toHaveBeenCalledWith({
       orderBy: [{ district: 'asc' }, { name: 'asc' }],
     });

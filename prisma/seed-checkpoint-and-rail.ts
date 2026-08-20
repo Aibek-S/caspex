@@ -24,9 +24,24 @@ const checkpoints = [
 ];
 
 const trainSchedules = [
-  { stationName: 'Бейнеу', departuresPerDay: 14, latitude: 45.317, longitude: 55.2 },
-  { stationName: 'Мангистау', departuresPerDay: 10, latitude: 43.69, longitude: 51.98 },
-  { stationName: 'Актау (порт)', departuresPerDay: 8, latitude: 43.65, longitude: 51.167 },
+  {
+    stationName: 'Бейнеу',
+    departuresPerDay: 14,
+    latitude: 45.317,
+    longitude: 55.2,
+  },
+  {
+    stationName: 'Мангистау',
+    departuresPerDay: 10,
+    latitude: 43.69,
+    longitude: 51.98,
+  },
+  {
+    stationName: 'Актау (порт)',
+    departuresPerDay: 8,
+    latitude: 43.65,
+    longitude: 51.167,
+  },
 ];
 
 async function main() {
